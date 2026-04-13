@@ -64,6 +64,7 @@ typedef struct pvpair_t
 int comparisonZ(void* a, void* b);
 MinMax getMinMax(List *lpoints);
 uint32_t normalizeUint32(double x,double min,double max);
+int isInBall(Point *current,Point *ref,double r);
 
 
 
@@ -205,5 +206,58 @@ void *pdctExactSearch(PointDct *pd, Point *p)
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
 {
-	return NULL;
+	MinMax minmax = pd->minmax;
+
+	double x1 = ptGetx(p)-r;
+	double y1 = ptGety(p)-r;
+
+	if(x1 < minmax.minX) x1 = minmax.minX;
+	if(y1 < minmax.minY) y1 = minmax.minY;
+
+	uint32_t normalizedX1 = normalizeUint32(x1, minmax.minX, minmax.maxX);
+	uint32_t normalizedY1 = normalizeUint32(y1, minmax.minY, minmax.maxY);
+
+	uint64_t z1 = zEncode(normalizedX1,normalizedY1);
+
+	double x2 = ptGetx(p)+r;
+	double y2 = ptGety(p)+r;
+
+	if(x2 > minmax.maxX) x2 = minmax.maxX;
+	if(y2 > minmax.maxY) y2 = minmax.maxY;
+
+	uint32_t normalizedX2 = normalizeUint32(x2, minmax.minX, minmax.maxX);
+	uint32_t normalizedY2 = normalizeUint32(y2, minmax.minY, minmax.maxY);
+
+	uint64_t z2 = zEncode(normalizedX2,normalizedY2);
+
+	List *l = bstRangeSearch(pd->bst,&z1,&z2);
+
+	List *result = listNew();
+
+	for(LNode *n = l->head; n; n = n->next)
+	{
+		PVpair *pair = (PVpair*) n->value;
+
+		if(isInBall(pair->point,p,r) ==  1)
+		{
+			listInsertLast(result,pair->value);
+		}
+	}
+
+	listFree(l,false);
+
+	return result;
+}
+
+int isInBall(Point *current,Point *ref,double r)
+{
+	double x = ptGetx(current);
+	double y = ptGety(current);
+
+	double xc = ptGetx(ref);
+	double yc = ptGety(ref);
+
+	if( (x-xc)*(x-xc) + (y-yc)*(y-yc) <= r*r ) return 1;
+
+	return 0;
 }
