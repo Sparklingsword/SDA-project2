@@ -1,0 +1,455 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+#include "PointDct.h"
+
+typedef struct BNode2d_t BNode2d;
+
+struct BNode2d_t
+{
+    Point *point;
+    void *value;
+    BNode2d *parent;
+    BNode2d *left;
+    BNode2d *right;
+};
+
+typedef struct BST2d_t
+{
+    BNode2d *root;
+    size_t size;
+    int (*ptCompare)(Point *p1, Point *p2);
+}BST2d;
+
+typedef struct pvpair_t
+{
+    Point *point;
+    void *value;
+} PVpair;
+
+struct PointDct_t
+{
+	BST2d *bst;
+};
+
+
+void mergeSort(PVpair *array, int (*compare)(Point *, Point *), size_t p, size_t q);
+int compareX(Point *p1, Point *p2);
+int compareY(Point *p1, Point *p2);
+
+
+BST2d *bst2dNew(int ptCompare(Point *p1, Point *p2));
+BNode2d *bn2dNew(Point *point, void *value);
+void bst2dFree(BST2d *bst, bool freePoint, bool freeValue);
+void bst2dFreeRec(BNode2d *n, bool freePoint, bool freeValue);
+size_t bst2dSize(BST2d *bst);
+size_t bst2dHeight(BST2d *bst);
+static size_t bst2dHeightRec(BNode2d *root);
+double bst2dAverageNodeDepth(BST2d *bst);
+size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t Depth);
+
+BNode2d *buildOptBst2d(PVpair *array ,BNode2d *parent, size_t p, size_t q,bool axis);
+void *pdctExactSearch(PointDct *pd, Point *p);
+void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
+List *pdctBallSearch(PointDct *pd, Point *p, double r);
+BNode2d *bst2dSearchPointmin(BNode2d *node, Point *Point,bool axis);
+static BNode2d *successor2d(BNode2d *n);
+static BNode2d *bn2dMin(BNode2d *n);
+int isInBall(Point *current,Point *ref,double r);
+
+BST2d *bst2dNew(int ptCompare(Point *p1, Point *p2))
+{
+    BST2d *bst = malloc(sizeof(BST2d));
+    if (bst == NULL)
+    {
+        fprintf(stderr, "bestNew: allocation error");
+        exit(1);
+    }
+    bst->root = NULL;
+    bst->size = 0;
+    bst->ptCompare = ptCompare;
+    return bst;
+}
+
+BNode2d *bn2dNew(Point *point, void *value)
+{
+    BNode2d *n = malloc(sizeof(BNode2d));
+    if (n == NULL)
+    {
+        fprintf(stderr, "bnNew2d: allocation error\n");
+        exit(1);
+    }
+    n->left = NULL;
+    n->right = NULL;
+    n->parent = NULL;
+    n->point = point;
+    n->value = value;
+    return n;
+}
+
+PointDct *pdctCreate(List *lpoints, List *Lvalues)
+{
+    if(listSize(lpoints) != listSize(Lvalues)) return NULL;
+
+    PointDct *pd = malloc(sizeof(PointDct));
+	if(!pd) return NULL;
+
+	LNode *pointNode = lpoints->head;
+	LNode *valNode = Lvalues->head;
+    PVpair *array = malloc(listSize(Lvalues)*sizeof(PVpair));
+	
+	for(int i = 0;pointNode;i++)
+	{
+        array[i].point = pointNode->value;
+        array[i].value = valNode->value;
+
+        pointNode = pointNode->next;
+		valNode = valNode->next;
+
+    }
+
+    BST2d *bst = bst2dNew(ptCompare);
+
+    bst->root = buildOptBst2d(array, NULL, 0, listSize(lpoints) - 1, true);
+
+    bst->size = listSize(Lvalues);
+
+    pd->bst = bst;
+	return pd;
+}
+
+BNode2d *buildOptBst2d(PVpair *array ,BNode2d *parent, size_t p, size_t q,bool axis) 
+{
+    if(p>q)
+    {
+        return NULL;
+    }
+
+    if(axis)
+    {
+        mergeSort(array, compareX, p, q);
+        axis = false;
+    } 
+
+    else 
+    {
+        mergeSort(array, compareY, p, q);
+        axis = true;
+    }
+
+    size_t m = p + (q - p)/2;
+
+    BNode2d *node = bn2dNew(array[m].point,array[m].value);
+
+    if(!node)
+    {
+        return NULL;
+    }
+
+    node->parent = parent;
+    
+
+    if(p < m)
+    {
+        node->left = buildOptBst2d(array,node,p,m-1,axis);
+    }
+
+    node->right = buildOptBst2d(array,node,m+1,q,axis);
+
+    return node;
+}
+
+void mergeSort(PVpair *array, int (*compare)(Point *, Point *),size_t p, size_t q)
+{
+   
+
+    if(p < q)
+        {
+            PVpair *temp = malloc((q+1)*sizeof(PVpair));
+            size_t m = p + (q - p)/2;
+            mergeSort(array, compare, p, m);
+            mergeSort(array, compare, m + 1 , q);
+
+            int comp;
+            size_t i = p;
+            size_t j = m + 1; 
+
+            for(size_t k = p; k <= q; k++)
+            {
+                if(i == m + 1)
+                {
+                    temp[k] = array[j];
+                    j++;
+                    continue;
+                }
+
+                if(j == q+1)
+                {
+                    temp[k] = array[i];
+                    i++;
+                    continue;
+                }
+
+                comp = compare(array[i].point,array[j].point);
+
+                if(comp <= 0) 
+                {
+                    temp[k] = array[i];
+                    i++;
+                }
+
+                if(comp > 0)
+                {
+                    temp[k] = array[j];
+                    j++;
+                }
+            }
+
+            for (size_t k = p; k <= q; k++)
+            {
+                array[k] = temp[k];
+            }
+            free(temp);
+        }
+
+    return;
+}
+
+int compareX(Point *p1, Point *p2)
+{
+    if(ptGetx(p1)< ptGetx(p2)) return -1;
+    else if(ptGetx(p1)> ptGetx(p2)) return 1;
+    
+    if(ptGety(p1) < ptGety(p2)) return -1;
+    else if(ptGety(p1) > ptGety(p2)) return 1;
+
+    return 0;
+}
+
+int compareY(Point *p1, Point *p2)
+{
+    if(ptGety(p1)< ptGety(p2)) return -1;
+    else if(ptGety(p1)> ptGety(p2)) return 1;
+    
+    if(ptGetx(p1)< ptGetx(p2)) return -1;
+    else if(ptGetx(p1)> ptGetx(p2)) return 1;
+
+    return 0;
+}
+
+void pdctFree(PointDct *pd)
+{
+	bst2dFree(pd->bst,false,false);
+	free(pd);
+}
+
+void bst2dFree(BST2d *bst, bool freePoint, bool freeValue)
+{
+    bst2dFreeRec(bst->root, freePoint, freeValue);
+    free(bst);
+}
+
+void bst2dFreeRec(BNode2d *n, bool freePoint, bool freeValue)
+{
+    if (n == NULL)
+        return;
+    bst2dFreeRec(n->left, freePoint, freeValue);
+    bst2dFreeRec(n->right, freePoint, freeValue);
+    if (freePoint)
+        free(n->point);
+    if (freeValue)
+        free(n->value);
+    free(n);
+}
+
+size_t pdctSize(PointDct *pd)
+{
+	return bst2dSize(pd->bst);
+}
+
+size_t bst2dSize(BST2d *bst)
+{
+    return bst->size;
+}
+
+
+size_t pdctHeight(PointDct *pd)
+{
+	return bst2dHeight(pd->bst);
+}
+
+static size_t bst2dHeightRec(BNode2d *root)
+{
+    if (!root)
+        return 0;
+
+    size_t hleft = bst2dHeightRec(root->left);
+    size_t hright = bst2dHeightRec(root->right);
+    if (hleft > hright)
+        return 1 + hleft;
+    else
+        return 1 + hright;
+}
+
+size_t bst2dHeight(BST2d *bst)
+{
+    return bst2dHeightRec(bst->root);
+}
+
+size_t pdctAverageNodeDepth(PointDct *pd)
+{
+	return bst2dAverageNodeDepth(pd->bst);
+}
+
+double bst2dAverageNodeDepth(BST2d *bst) //finito
+{
+    if(!bst || !bst->root)
+    {
+        return -1;
+    }
+
+    size_t nbrNode = 0;
+    size_t Depth = 0;
+
+
+    size_t sumDepth = calcBst2dAverageNodeDepth(bst->root, &nbrNode, Depth);
+
+    double result = (double) sumDepth/nbrNode;
+    return result;
+}
+
+size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t Depth)
+{
+    (*nbrNode)++;
+    size_t sumLeft = 0;
+    size_t sumRight = 0;
+
+    if(node->left)
+    {
+        sumLeft = calcBst2dAverageNodeDepth(node->left,nbrNode, Depth+1);
+    }
+
+    if(node->right)
+    {
+        sumRight = calcBst2dAverageNodeDepth(node->right, nbrNode, Depth+1);
+    }
+
+    return sumLeft + Depth + sumRight;
+}
+
+void *pdctExactSearch(PointDct *pd, Point *p)
+{
+    return pdctExactSearchRec(pd->bst->root,p,true);
+}
+void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
+{
+    if(!node) return NULL;
+    if(ptCompare(node->point,p) == 0) return node->value;
+
+    int comp;
+    if(axis)
+    {
+        comp = compareX(p,node->point);
+        axis = false;
+    }
+    else
+    {
+        comp = compareY(p,node->point);
+        axis = true;
+    }
+
+    if(comp <= 0) return pdctExactSearchRec(node->left, p, axis);
+    else return pdctExactSearchRec(node->right, p, axis);
+}
+
+List *pdctBallSearch(PointDct *pd, Point *p, double r)
+{
+    Point *x1 = ptNewFromXY(ptGetx(p)-r,ptGety(p)-r);
+    Point *x2 = ptNewFromXY(ptGetx(p)+r,ptGety(p)+r);
+
+    BNode2d *current = bst2dSearchPointmin(pd->bst->root,x1,true);
+
+    List *result = listNew();
+
+    while(ptCompare(x2,current->point)>0)
+    {
+        if(isInBall(current->point,p,r))
+        {
+            listInsertLast(result,current->value);
+        }
+        current = successor2d(current);
+    }
+    return result;
+}
+
+BNode2d *bst2dSearchPointmin(BNode2d *node, Point *p,bool axis)
+{
+    int comp;
+    if(!node)
+    {
+        return NULL;
+    }
+
+    if(axis)
+    {
+        comp = compareX(p,node->point);
+        axis = false;
+    }
+    else
+    {
+        comp = compareY(p,node->point);
+        axis = true;
+    }
+
+    if(comp < 0)    
+    {
+        return bst2dSearchPointmin(node->right,p,axis);
+    }
+
+    else
+    {
+        BNode2d *test = bst2dSearchPointmin(node->left,p,axis);
+        if(test)
+        {
+            return test;
+        }
+        return node;
+    }
+}
+
+static BNode2d *successor2d(BNode2d *n)
+{
+    if (n->right != NULL)
+        return bn2dMin(n->right);
+    BNode2d *y = n->parent;
+    BNode2d *x = n;
+    while (y != NULL && x == y->right)
+    {
+        x = y;
+        y = y->parent;
+    }
+    return y;
+}
+
+static BNode2d *bn2dMin(BNode2d *n)
+{
+    while (n->left != NULL)
+        n = n->left;
+    return n;
+}
+
+int isInBall(Point *current,Point *ref,double r)
+{
+	double x = ptGetx(current);
+	double y = ptGety(current);
+
+	double xc = ptGetx(ref);
+	double yc = ptGety(ref);
+
+	if( (x-xc)*(x-xc) + (y-yc)*(y-yc) <= r*r ) return 1;
+
+	return 0;
+}
+

@@ -105,8 +105,6 @@ MinMax getMinMax(List *lpoints)
 	minmax.maxY = maxY;
 
 	return minmax;
-
-
 }
 
 uint32_t normalizeUint32(double x,double min,double max) //idée de gpt 
@@ -196,7 +194,7 @@ void *pdctExactSearch(PointDct *pd, Point *p)
 	{
 		PVpair *pair = (PVpair*) n->value;
 
-		if(ptGetx(pair->point) == ptGetx(p) && ptGety(pair->point) == ptGety(p)) return pair->value;
+		if(ptCompare(pair->point,p) == 0) return pair->value;
 	}
 
 	return NULL;
