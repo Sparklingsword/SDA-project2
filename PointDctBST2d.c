@@ -55,9 +55,12 @@ void *pdctExactSearch(PointDct *pd, Point *p);
 void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
 List *pdctBallSearch(PointDct *pd, Point *p, double r);
 BNode2d *bst2dSearchPointmin(BNode2d *node, Point *Point,bool axis);
-static BNode2d *successor2d(BNode2d *n);
-static BNode2d *bn2dMin(BNode2d *n);
+void pdctBallSearchRec(BNode2d *node, Point *center, double r, bool axis, List *result);
+//static BNode2d *successor2d(BNode2d *n);
+//static BNode2d *bn2dMin(BNode2d *n);
 int isInBall(Point *current,Point *ref,double r);
+
+
 
 BST2d *bst2dNew(int ptCompare(Point *p1, Point *p2))
 {
@@ -113,7 +116,7 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
     BST2d *bst = bst2dNew(ptCompare);
 
     bst->root = buildOptBst2d(array, NULL, 0, listSize(lpoints) - 1, true);
-
+    free(array); // On a plus besoin de array donc je peux non ? // Je viens de tester avec valgrind, go le laisser, on gagne 160000 bytes
     bst->size = listSize(Lvalues);
 
     pd->bst = bst;
@@ -363,13 +366,22 @@ void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
     if(comp <= 0) return pdctExactSearchRec(node->left, p, axis);
     else return pdctExactSearchRec(node->right, p, axis);
 }
+/*
+
+Pas bon
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
 {
-    Point *x1 = ptNewFromXY(ptGetx(p)-r,ptGety(p)-r);
-    Point *x2 = ptNewFromXY(ptGetx(p)+r,ptGety(p)+r);
+    Point *x1 = ptNewFromXY(ptGetx(p) - r,ptGety(p) - r);
+    if(x1 == NULL)
+            fprintf(stderr, "x1 pointe vers NULL\n");
+    Point *x2 = ptNewFromXY(ptGetx(p) + r,ptGety(p) + r);
+    if(x2 == NULL)
+            fprintf(stderr, "x2 pointe vers NULL\n");
 
-    BNode2d *current = bst2dSearchPointmin(pd->bst->root,x1,true);
+    BNode2d *current = bst2dSearchPointmin(pd->bst->root, x1, true);
+    if(current == NULL)
+        fprintf(stderr, "current pointe vers NULL\n");
 
     List *result = listNew();
 
@@ -380,15 +392,56 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
             listInsertLast(result,current->value);
         }
         current = successor2d(current);
+        if(current == NULL)
+            fprintf(stderr, "current après while dans pointe vers NULL\n");
     }
     return result;
 }
+*/
 
-BNode2d *bst2dSearchPointmin(BNode2d *node, Point *p,bool axis)
+// Fonction interne pour explorer larbre
+void pdctBallSearchRec(BNode2d *node, Point *ref, double r, bool axis, List *result)
+{
+    if (node == NULL)
+        return;
+
+    if (isInBall(node->point, ref, r))
+        listInsertLast(result, node->value);
+
+    double dist;
+
+    if(axis)
+        dist = ptGetx(ref) - ptGetx(node->point);
+    else
+        dist = ptGety(ref) - ptGety(node->point);
+
+    if (dist >= -r) 
+        pdctBallSearchRec(node->left, ref, r, !axis, result);
+    
+    if (dist <= r) 
+        pdctBallSearchRec(node->right, ref, r, !axis, result);
+}
+
+List *pdctBallSearch(PointDct *pd, Point *p, double r)
+{
+    List *result = listNew();
+    if(!result)
+        return NULL;
+
+    if(pd->bst->root == NULL)
+        return NULL;
+
+    pdctBallSearchRec(pd->bst->root, p, r, true, result);
+
+    return result;
+}
+
+BNode2d *bst2dSearchPointmin(BNode2d *node, Point *p, bool axis)
 {
     int comp;
     if(!node)
     {
+        fprintf(stderr, "node pointe vers NULL\n");
         return NULL;
     }
 
@@ -415,20 +468,40 @@ BNode2d *bst2dSearchPointmin(BNode2d *node, Point *p,bool axis)
         {
             return test;
         }
+        else fprintf(stderr, "test pointe vers NULL\n");
         return node;
     }
 }
 
+/* sert à rien du coup
 static BNode2d *successor2d(BNode2d *n)
 {
+
+    if(n == NULL)
+        fprintf(stderr, "n pointe ver NULL\n");
+
+    if(n->left == NULL)
+        fprintf(stderr, "n->left pointe ver NULL\n");
+
+    if(n->right == NULL)
+        fprintf(stderr, "n->right pointe ver NULL\n");
+
     if (n->right != NULL)
         return bn2dMin(n->right);
     BNode2d *y = n->parent;
+    if(y == NULL)
+        fprintf(stderr, "y pointe ver NULL\n");
     BNode2d *x = n;
+    if(x == NULL)
+        fprintf(stderr, "x pointe ver NULL\n");
     while (y != NULL && x == y->right)
     {
         x = y;
+        if(x == NULL)
+            fprintf(stderr, "x dans while pointe ver NULL\n");
         y = y->parent;
+        if(x == NULL)
+            fprintf(stderr, "y dans while pointe ver NULL\n");
     }
     return y;
 }
@@ -438,7 +511,7 @@ static BNode2d *bn2dMin(BNode2d *n)
     while (n->left != NULL)
         n = n->left;
     return n;
-}
+}*/
 
 int isInBall(Point *current,Point *ref,double r)
 {
@@ -452,4 +525,3 @@ int isInBall(Point *current,Point *ref,double r)
 
 	return 0;
 }
-
