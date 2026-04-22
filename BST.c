@@ -269,7 +269,8 @@ BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lva
     BST *bst = bstNew(comparison_fn_t);
 
     bst->root = buildOptBst(pairList,NULL,0,nbrValues-1);
-
+    free(pairList);
+    bst->size = nbrValues;
     return bst;
 }
 

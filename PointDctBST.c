@@ -152,6 +152,9 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 
 	BST *bst = bstOptimalBuild(comparisonZ,lz,pairList);
 
+	listFree(lz, false);
+	listFree(pairList, false);
+
 	pd->bst = bst;
 
 	pd->minmax = minmax;
@@ -161,7 +164,7 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 
 void pdctFree(PointDct *pd)
 {
-	bstFree(pd->bst,false,false);
+	bstFree(pd->bst,true,true);
 	free(pd);
 }
 
@@ -194,9 +197,13 @@ void *pdctExactSearch(PointDct *pd, Point *p)
 	{
 		PVpair *pair = (PVpair*) n->value;
 
-		if(ptCompare(pair->point,p) == 0) return pair->value;
+		if(ptCompare(pair->point,p) == 0) 
+		{
+			listFree(l, false);
+			return pair->value;
+		}
 	}
-
+	listFree(l, false);
 	return NULL;
 	
 }
