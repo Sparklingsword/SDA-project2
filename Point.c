@@ -15,7 +15,11 @@ struct Point_t
 #define REARTH 6371.0
 #define PORTOLONG -8.6291
 #define PORTOLAT 41.1579
-#define M_PI 3.14 // a possiblement changer
+#ifndef M_PI
+
+# define M_PI 3.1415926535897932384626433832
+
+#endif
 
 Point *ptNewFromXY(double x, double y)
 {

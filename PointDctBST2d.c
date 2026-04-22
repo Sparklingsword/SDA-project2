@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "PointDct.h"
 
@@ -57,13 +58,9 @@ void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
 List *pdctBallSearch(PointDct *pd, Point *p, double r);
 BNode2d *bst2dSearchPointmin(BNode2d *node, Point *Point,bool axis);
 void pdctBallSearchRec(BNode2d *node, Point *center, double r, bool axis, List *result);
-//static BNode2d *successor2d(BNode2d *n);
-//static BNode2d *bn2dMin(BNode2d *n);
+
 int isInBall(Point *current,Point *ref,double r);
 
-//void rebuildArray(PVpair *array,PVpair med,size_t *leftIds,size_t leftSize,size_t p,size_t q);
-//void getLeftIds(PVpair *array, size_t p, size_t m, size_t *ids);
-//bool isInLeft(size_t id, size_t *ids, size_t size);
 
 void markLeftIds(PVpair *array, bool *isLeft, size_t p, size_t m);
 void unmarkLeftIds(PVpair *array, bool *isLeft, size_t p, size_t m);
@@ -242,232 +239,7 @@ void tempName(PVpair *array, PVpair med, bool *isLeft, size_t p, size_t q)
     free(temp);
 }
 
-/*
-PointDct *pdctCreate(List *lpoints, List *Lvalues)
-{
-    if(listSize(lpoints) != listSize(Lvalues)) return NULL;
 
-    PointDct *pd = malloc(sizeof(PointDct));
-	if(!pd) return NULL;
-
-	LNode *pointNode = lpoints->head;
-	LNode *valNode = Lvalues->head;
-    PVpair *array = malloc(listSize(Lvalues)*sizeof(PVpair));
-	
-	for(size_t i = 0; pointNode != NULL; i++)
-	{
-        array[i].point = pointNode->value;
-        array[i].value = valNode->value;
-        array[i].id = i;
-
-        pointNode = pointNode->next;
-		valNode = valNode->next;
-
-    }
-
-    PVpair *arraySortedX = malloc(listSize(Lvalues)* sizeof(PVpair));
-
-    memcpy(arraySortedX, array, listSize(Lvalues)* sizeof(PVpair));
-
-    PVpair *arraySortedY = malloc(listSize(Lvalues)* sizeof(PVpair));
-
-    memcpy(arraySortedY, array, listSize(Lvalues)* sizeof(PVpair));
-
-    free(array);
-
-    mergeSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
-    mergeSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
-
-    BST2d *bst = bst2dNew();
-    bst->root = buildOptBst2d(arraySortedX,arraySortedY,NULL, 0, listSize(Lvalues)-1,true);
-
-    free(arraySortedX); // On a plus besoin de array donc je peux non ? // Je viens de tester avec valgrind, go le laisser, on gagne 160000 bytes
-    free(arraySortedY);
-
-    bst->size = listSize(Lvalues);
-    pd->bst = bst;
-	return pd;
-
-}
-
-BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY,BNode2d *parent, size_t p, size_t q,bool axis)
-{
-    if(p>q)
-    {
-        return NULL;
-    }
-
-    size_t m = p + (q - p)/2;
-    BNode2d *node;
-
-    if(axis)
-    {
-        node = bn2dNew(arraySortedX[m].point,arraySortedX[m].value);
-        size_t *leftIds = malloc((m-p) * sizeof(size_t));
-        getLeftIds(arraySortedX, p, m, leftIds);
-
-        rebuildArray(arraySortedY, arraySortedX[m], leftIds, m-p, p, q);
-
-        free(leftIds);
-    } 
-
-    else 
-    {
-        node = bn2dNew(arraySortedY[m].point,arraySortedY[m].value);
-        size_t *leftIds = malloc((m-p) * sizeof(size_t));
-        getLeftIds(arraySortedY, p, m, leftIds);
-
-        rebuildArray(arraySortedX, arraySortedY[m], leftIds, m-p, p, q);
-
-        free(leftIds);
-    }
-
-
-    if(!node)
-    {
-        return NULL;
-    }
-
-    node->parent = parent;
-    
-
-    if(p < m)
-    {
-        node->left = buildOptBst2d(arraySortedX,arraySortedY,node,p,m-1,!axis);
-    }
-
-    node->right = buildOptBst2d(arraySortedX,arraySortedY,node,m+1,q,!axis);
-
-    return node;
-}
-
-void getLeftIds(PVpair *array, size_t p, size_t m, size_t *ids)
-{
-    size_t k = 0;
-    for(size_t i = p; i < m; i++)
-    {
-        ids[k++] = array[i].id;
-    }
-}
-
-bool isInLeft(size_t id, size_t *ids, size_t size)
-{
-    for(size_t i = 0; i < size; i++)
-    {
-        if(ids[i] == id) return true;
-    }
-    return false;
-}
-
-void rebuildArray(PVpair *array,PVpair med,size_t *leftIds,size_t leftSize,size_t p,size_t q)
-{
-    size_t n = q - p + 1;
-    PVpair *temp = malloc(n * sizeof(PVpair));
-    if(!temp) return;
-
-    size_t i = 0;
-    size_t j = leftSize + 1; // après pivot
-
-    for(size_t k = p; k <= q; k++)
-    {
-        if(array[k].id == med.id)
-        {
-            temp[leftSize] = array[k]; // pivot au milieu
-        }
-        else if(isInLeft(array[k].id, leftIds, leftSize))
-        {
-            temp[i++] = array[k]; // gauche
-        }
-        else
-        {
-            temp[j++] = array[k]; // droite
-        }
-    }
-
-    // copie dans array
-    for(size_t k = 0; k < n; k++)
-    {
-        array[p + k] = temp[k];
-    }
-
-    free(temp);
-}
-
-*/
-
-/*
-PointDct *pdctCreate(List *lpoints, List *Lvalues)
-{
-    if(listSize(lpoints) != listSize(Lvalues)) return NULL;
-
-    PointDct *pd = malloc(sizeof(PointDct));
-	if(!pd) return NULL;
-
-	LNode *pointNode = lpoints->head;
-	LNode *valNode = Lvalues->head;
-    PVpair *array = malloc(listSize(Lvalues)*sizeof(PVpair));
-	
-	for(int i = 0;pointNode;i++)
-	{
-        array[i].point = pointNode->value;
-        array[i].value = valNode->value;
-
-        pointNode = pointNode->next;
-		valNode = valNode->next;
-
-    }
-
-    BST2d *bst = bst2dNew(ptCompare);
-
-    bst->root = buildOptBst2d(array, NULL, 0, listSize(lpoints) - 1, true);
-    free(array); // On a plus besoin de array donc je peux non ? // Je viens de tester avec valgrind, go le laisser, on gagne 160000 bytes
-    bst->size = listSize(Lvalues);
-
-    pd->bst = bst;
-	return pd;
-}
-
-BNode2d *buildOptBst2d(PVpair *array ,BNode2d *parent, size_t p, size_t q,bool axis) 
-{
-    if(p>q)
-    {
-        return NULL;
-    }
-
-    if(axis)
-    {
-        mergeSort(array, compareX, p, q);
-        axis = false;
-    } 
-
-    else 
-    {
-        mergeSort(array, compareY, p, q);
-        axis = true;
-    }
-
-    size_t m = p + (q - p)/2;
-
-    BNode2d *node = bn2dNew(array[m].point,array[m].value);
-
-    if(!node)
-    {
-        return NULL;
-    }
-
-    node->parent = parent;
-    
-
-    if(p < m)
-    {
-        node->left = buildOptBst2d(array,node,p,m-1,axis);
-    }
-
-    node->right = buildOptBst2d(array,node,m+1,q,axis);
-
-    return node;
-}
-*/
 void mergeSort(PVpair *array, int (*compare)(Point *, Point *),size_t p, size_t q)
 {
    

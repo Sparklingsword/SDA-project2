@@ -66,6 +66,7 @@ BNode *bnNew(void *key, void *value)
     }
     n->left = NULL;
     n->right = NULL;
+    n->parent = NULL; // modif annonce prof
     n->key = key;
     n->value = value;
     return n;
@@ -106,7 +107,7 @@ void bstFreeRec(BNode *n, bool freeKey, bool freeValue)
 
 size_t bstSize(BST *bst)
 {
-    return bst->size;
+    return bst->size - 1; // modif annonce prof
 }
 
 static size_t bstHeightRec(BNode *root)
