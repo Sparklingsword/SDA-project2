@@ -107,7 +107,7 @@ void bstFreeRec(BNode *n, bool freeKey, bool freeValue)
 
 size_t bstSize(BST *bst)
 {
-    return bst->size - 1; // modif annonce prof
+    return bst->size; 
 }
 
 static size_t bstHeightRec(BNode *root)
@@ -125,7 +125,7 @@ static size_t bstHeightRec(BNode *root)
 
 size_t bstHeight(BST *bst)
 {
-    return bstHeightRec(bst->root);
+    return bstHeightRec(bst->root) -1 ; //modif prof
 }
 
 bool bstInsert(BST *bst, void *key, void *value)
