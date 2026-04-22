@@ -55,6 +55,10 @@ BNode *bstRangeSearchKeymin(BNode *node, void *keymin, int (*compfn)(void *, voi
 void mergeSortKV(KVpair *pairList,KVpair *temp, int comparison_fn_t(void *, void *),size_t p, size_t q);
 BNode *buildOptBst(KVpair *pairList,BNode *parent, size_t p, size_t q);
 
+void quickSortKV(KVpair *pairList,int comparison_fn_t(void *, void *),size_t p,size_t q);
+size_t pivotRand(size_t p, size_t q);
+void swapKV(KVpair *pairList, size_t i, size_t j);
+
 
 BNode *bnNew(void *key, void *value)
 {
@@ -219,7 +223,7 @@ static BNode *successor(BNode *n)
 // ----------------------------------------------------------------------------------
 // The functions below have to be implemented
 
-BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lvalues) //finito
+BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lvalues) //finito (MergeSort est plus rapide que quicksort)
 {
     if(!lkeys || !lvalues)
     {
@@ -263,6 +267,8 @@ BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lva
     }
 
     mergeSortKV(pairList, temp, comparison_fn_t, 0, nbrValues-1);
+    //quickSortKV(pairList,comparison_fn_t, 0, nbrValues-1);
+    
 
     free(temp);
 
@@ -435,3 +441,64 @@ size_t calcBstAverageNodeDepth(BNode *node, size_t *nbrNode, size_t Depth)
 
     return sumLeft + Depth + sumRight;
 }
+
+
+void quickSortKV(KVpair *pairList,int comparison_fn_t(void *, void *),size_t p,size_t q)
+{
+    
+
+    if(p >= q)return;
+
+    size_t pivot = pivotRand(p,q);
+    swapKV(pairList,pivot,q);
+
+    int i = p;
+    int j = q-1;
+    int k = p;
+    while(k <= j)
+    {
+        int comp = comparison_fn_t(pairList[k].key, pairList[q].key);
+
+        if(comp < 0)
+        {
+            swapKV(pairList,k,i);
+            i++;
+            k++;
+        }
+
+        else if (comp > 0)
+        {
+            swapKV(pairList,k,j);
+            j--;
+        }
+        else
+        {
+            k++;
+        }
+    }
+
+    swapKV(pairList,j+1,q);
+
+    if(i - 1 >= (int)p)
+    {
+        quickSortKV(pairList,comparison_fn_t, p, i-1);
+    }
+
+    if(j+2 <= (int) q)
+    {
+      quickSortKV(pairList,comparison_fn_t, j+2,  q);  
+    } 
+}
+
+void swapKV(KVpair *pairList, size_t i, size_t j)
+{
+    KVpair temp = pairList[i];
+    pairList[i] = pairList[j];
+    pairList[j] = temp;
+}
+
+size_t pivotRand(size_t p, size_t q) 
+{ 
+    return p + (size_t) (rand()%(q-p+1)); 
+}
+

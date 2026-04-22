@@ -64,6 +64,10 @@ int isInBall(Point *current,Point *ref,double r);
 void markLeftIds(PVpair *array, bool *isLeft, size_t p, size_t m);
 void tempName(PVpair *array, PVpair med, bool *isLeft, size_t p, size_t q);
 
+void swapPV(PVpair *array, size_t i, size_t j);
+size_t pivotRand(size_t p, size_t q);
+void quickSort(PVpair *array, int (*compare)(Point *, Point *), size_t p, size_t q);
+
 
 
 BST2d *bst2dNew()
@@ -79,7 +83,7 @@ BST2d *bst2dNew()
     return bst;
 }
 
-BNode2d *bn2dNew(Point *point, void *value)
+BNode2d *bn2dNew(Point *point, void *value) // Ici quicksort bien mieux
 {
     BNode2d *n = malloc(sizeof(BNode2d));
     if (n == NULL)
@@ -122,8 +126,11 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 
     }
 
-    mergeSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
-    mergeSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
+    //mergeSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
+    quickSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
+
+    //mergeSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
+    quickSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
 
     BST2d *bst = bst2dNew();
     size_t n = listSize(Lvalues);
@@ -224,6 +231,63 @@ void tempName(PVpair *array, PVpair med, bool *isLeft, size_t p, size_t q)
     }
 
     free(temp);
+}
+
+void swapPV(PVpair *array, size_t i, size_t j)
+{
+    PVpair temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+}
+
+size_t pivotRand(size_t p, size_t q) 
+{ 
+    return p + (size_t)(rand() % (q - p + 1)); 
+}
+
+void quickSort(PVpair *array, int (*compare)(Point *, Point *), size_t p, size_t q)
+{
+    if (p >= q) return;
+
+    size_t pivot = pivotRand(p, q);
+    swapPV(array, pivot, q);
+
+    int i = (int)p;
+    int j = (int)q - 1;
+    int k = (int)p;
+
+    while (k <= j)
+    {
+        int comp = compare(array[k].point, array[q].point);
+
+        if (comp < 0)
+        {
+            swapPV(array, (size_t)k, (size_t)i);
+            i++;
+            k++;
+        }
+        else if (comp > 0)
+        {
+            swapPV(array, (size_t)k, (size_t)j);
+            j--;
+        }
+        else
+        {
+            k++;
+        }
+    }
+
+    swapPV(array, (size_t)(j + 1), q);
+
+    if (i - 1 >= (int)p)
+    {
+        quickSort(array, compare, p, (size_t)(i - 1));
+    }
+
+    if (j + 2 <= (int)q)
+    {
+        quickSort(array, compare, (size_t)(j + 2), q);
+    }
 }
 
 
