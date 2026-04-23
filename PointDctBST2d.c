@@ -55,10 +55,7 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY, BNode2d *pare
 void *pdctExactSearch(PointDct *pd, Point *p);
 void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
 List *pdctBallSearch(PointDct *pd, Point *p, double r);
-BNode2d *bst2dSearchPointmin(BNode2d *node, Point *Point,bool axis);
-void pdctBallSearchRec(BNode2d *node, Point *center, double r, bool axis, List *result);
-
-int isInBall(Point *current,Point *ref,double r);
+void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r, double rr, bool axis, List *result);
 
 
 void markLeftIds(PVpair *array, bool *isLeft, size_t p, size_t m);
@@ -469,17 +466,18 @@ void *pdctExactSearch(PointDct *pd, Point *p)
 void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
 {
     if(!node) return NULL;
-    if(ptCompare(node->point,p) == 0) return node->value;
+    Point *point = node->point;
+    if(ptCompare(point,p) == 0) return node->value;
 
     int comp;
     if(axis)
     {
-        comp = compareX(p,node->point);
+        comp = compareX(p,point);
         axis = false;
     }
     else
     {
-        comp = compareY(p,node->point);
+        comp = compareY(p,point);
         axis = true;
     }
 
@@ -487,27 +485,38 @@ void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
     else return pdctExactSearchRec(node->right, p, axis);
 }
 
-// Fonction interne pour explorer larbre
-void pdctBallSearchRec(BNode2d *node, Point *ref, double r, bool axis, List *result)
-{
-    if (node == NULL)
-        return;
 
-    if (isInBall(node->point, ref, r))
+
+
+
+
+
+
+
+// Fonction interne pour explorer larbre
+void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bool axis, List *result)
+{
+    if (node == NULL) return;
+
+    double x = ptGetx(node->point);
+    double y = ptGety(node->point);
+
+    if((x-xc)*(x-xc) + (y-yc)*(y-yc) <= rr)
         listInsertLast(result, node->value);
 
     double dist;
+        
 
     if(axis)
-        dist = ptGetx(ref) - ptGetx(node->point);
+        dist = xc - x;
     else
-        dist = ptGety(ref) - ptGety(node->point);
+        dist = yc - y;
 
     if (dist < r) 
-        pdctBallSearchRec(node->left, ref, r, !axis, result);
+        pdctBallSearchRec(node->left, xc, yc, r,rr, !axis, result);
     
     if (dist >= -r) 
-        pdctBallSearchRec(node->right, ref, r, !axis, result);
+        pdctBallSearchRec(node->right, xc, yc, r,rr, !axis, result);
 }
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
@@ -519,59 +528,14 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
     if(pd->bst->root == NULL)
         return result;
 
-    pdctBallSearchRec(pd->bst->root, p, r, true, result);
+    double xc = ptGetx(p);
+	double yc = ptGety(p);
+
+    pdctBallSearchRec(pd->bst->root, xc, yc, r,r*r, true, result);
 
     return result;
 }
 
-BNode2d *bst2dSearchPointmin(BNode2d *node, Point *p, bool axis)
-{
-    int comp;
-    if(!node)
-    {
-        fprintf(stderr, "node pointe vers NULL\n");
-        return NULL;
-    }
-
-    if(axis)
-    {
-        comp = compareX(p,node->point);
-        axis = false;
-    }
-    else
-    {
-        comp = compareY(p,node->point);
-        axis = true;
-    }
-
-    if(comp < 0)    
-    {
-        return bst2dSearchPointmin(node->right,p,axis);
-    }
-
-    else
-    {
-        BNode2d *test = bst2dSearchPointmin(node->left,p,axis);
-        if(test)
-        {
-            return test;
-        }
-        else fprintf(stderr, "test pointe vers NULL\n");
-        return node;
-    }
-}
 
 
 
-int isInBall(Point *current,Point *ref,double r)
-{
-	double x = ptGetx(current);
-	double y = ptGety(current);
-
-	double xc = ptGetx(ref);
-	double yc = ptGety(ref);
-
-	if( (x-xc)*(x-xc) + (y-yc)*(y-yc) <= r*r ) return 1;
-
-	return 0;
-}

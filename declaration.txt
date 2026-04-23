@@ -14,13 +14,13 @@ Informations etudiants:
 =======================
 
 Etudiant 1:
-Matricule: ...
-Nom: ...
-Prénom: ...
-Contribution au projet: ... %
+Matricule: s2405458
+Nom: Chiem Dao
+Prénom: Dalex
+Contribution au projet: 50 %
 
 Etudiant 2: (laissez vide si vous avez fait le projet seul)
-Matricule: ...
-Nom: ...
-Prénom: ...
-Contribution au projet: ... %
+Matricule: s2401624
+Nom: Pegnyemb
+Prénom: Noah
+Contribution au projet: 50 %
