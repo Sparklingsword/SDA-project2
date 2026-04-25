@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-///#include <time.h>
+#include <time.h>
 
 #include "PointDct.h"
 
@@ -30,8 +30,7 @@ typedef struct pvpair_t
     Point *point;
     void *value;
     size_t id;
-    double x;
-    double y;
+    double xy;
 } PVpair;
 
 struct PointDct_t
@@ -68,19 +67,19 @@ void tempName(PVpair *array, PVpair med, bool *isLeft, size_t p, size_t q);
 void swapPV(PVpair *array, size_t i, size_t j);
 size_t pivotRand(size_t p, size_t q);
 void quickSort(PVpair *array, int (*compare)(Point *, Point *), size_t p, size_t q);
-///double now(void);
+double now(void);
 
 void quickSortXTest(PVpair *array, size_t p, size_t q);
 void quickSortYTest(PVpair *array, size_t p, size_t q);
 int compareXTest(double x1, double x2);
 int compareYTest(double y1, double y2);
 
-/*
+
 double now()
 {
     return (double)clock() / CLOCKS_PER_SEC;
 }
-*/
+
 
 BST2d *bst2dNew()
 {
@@ -112,6 +111,8 @@ BNode2d *bn2dNew(Point *point, void *value)
 }
 PointDct *pdctCreate(List *lpoints, List *Lvalues)
 {
+    printf("\n");
+    double t0, t1;
     if(listSize(lpoints) != listSize(Lvalues)) return NULL;
 
     PointDct *pd = malloc(sizeof(PointDct));
@@ -123,48 +124,51 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
     PVpair *arraySortedX = malloc(listSize(Lvalues)* sizeof(PVpair));
     PVpair *arraySortedY = malloc(listSize(Lvalues)* sizeof(PVpair));
 	
+    t0 = now();
+
 	for(size_t i = 0; pointNode != NULL; i++)
 	{
         arraySortedX[i].point = pointNode->value;
         arraySortedX[i].value = valNode->value;
         arraySortedX[i].id = i;
-        arraySortedX[i].x = ptGetx(pointNode->value);
+        arraySortedX[i].xy = ptGetx(pointNode->value);
 
         arraySortedY[i].point = pointNode->value;
         arraySortedY[i].value = valNode->value;
         arraySortedY[i].id = i;
-        arraySortedY[i].y = ptGety(pointNode->value);
+        arraySortedY[i].xy = ptGety(pointNode->value);
 
         pointNode = pointNode->next;
 		valNode = valNode->next;
 
     }
+    t1 = now();
+    printf("Création arrays: %f s\n", t1 - t0);
 
-    ///double t0, t1;
-    ///printf("\n");
-    ///t0 = now();
+    
+    t0 = now();
     //mergeSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
     //quickSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
     quickSortXTest(arraySortedX, 0, listSize(Lvalues)-1);
-    ///t1 = now();
-    ///printf("Tri X: %f s\n", t1 - t0);
+    t1 = now();
+    printf("Tri X: %f s\n", t1 - t0);
 
     
-    ///t0 = now();
+    t0 = now();
     //mergeSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
     //quickSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
     quickSortYTest(arraySortedY, 0, listSize(Lvalues)-1);
-    ///t1 = now();
-    ///printf("Tri Y: %f s\n", t1 - t0);
+    t1 = now();
+    printf("Tri Y: %f s\n", t1 - t0);
 
     BST2d *bst = bst2dNew();
     size_t n = listSize(Lvalues);
     bool *isLeft = calloc(n, sizeof(bool));
 
-    ///t0 = now();
+    t0 = now();
     bst->root = buildOptBst2d(arraySortedX, arraySortedY, NULL, 0, n-1, true, isLeft);
-    ///t1 = now();
-    ///printf("Build: %f s\n", t1 - t0);
+    t1 = now();
+    printf("Build: %f s\n", t1 - t0);
 
     free(isLeft);
 
@@ -285,7 +289,7 @@ void quickSortXTest(PVpair *array, size_t p, size_t q)
 
     while (k <= j)
     {
-        int comp = compareXTest(array[k].x, array[q].x);
+        int comp = compareXTest(array[k].xy, array[q].xy);
 
         if (comp < 0)
         {
@@ -330,7 +334,7 @@ void quickSortYTest(PVpair *array, size_t p, size_t q)
 
     while (k <= j)
     {
-        int comp = compareYTest(array[k].y, array[q].y);
+        int comp = compareYTest(array[k].xy, array[q].xy);
 
         if (comp < 0)
         {
