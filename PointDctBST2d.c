@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+///#include <time.h>
+
 #include "PointDct.h"
 
 typedef struct BNode2d_t BNode2d;
@@ -28,6 +30,8 @@ typedef struct pvpair_t
     Point *point;
     void *value;
     size_t id;
+    double x;
+    double y;
 } PVpair;
 
 struct PointDct_t
@@ -64,8 +68,19 @@ void tempName(PVpair *array, PVpair med, bool *isLeft, size_t p, size_t q);
 void swapPV(PVpair *array, size_t i, size_t j);
 size_t pivotRand(size_t p, size_t q);
 void quickSort(PVpair *array, int (*compare)(Point *, Point *), size_t p, size_t q);
+///double now(void);
 
+void quickSortXTest(PVpair *array, size_t p, size_t q);
+void quickSortYTest(PVpair *array, size_t p, size_t q);
+int compareXTest(double x1, double x2);
+int compareYTest(double y1, double y2);
 
+/*
+double now()
+{
+    return (double)clock() / CLOCKS_PER_SEC;
+}
+*/
 
 BST2d *bst2dNew()
 {
@@ -80,7 +95,7 @@ BST2d *bst2dNew()
     return bst;
 }
 
-BNode2d *bn2dNew(Point *point, void *value) // Ici quicksort bien mieux
+BNode2d *bn2dNew(Point *point, void *value) 
 {
     BNode2d *n = malloc(sizeof(BNode2d));
     if (n == NULL)
@@ -113,31 +128,47 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
         arraySortedX[i].point = pointNode->value;
         arraySortedX[i].value = valNode->value;
         arraySortedX[i].id = i;
+        arraySortedX[i].x = ptGetx(pointNode->value);
 
         arraySortedY[i].point = pointNode->value;
         arraySortedY[i].value = valNode->value;
         arraySortedY[i].id = i;
+        arraySortedY[i].y = ptGety(pointNode->value);
 
         pointNode = pointNode->next;
 		valNode = valNode->next;
 
     }
 
+    ///double t0, t1;
+    ///printf("\n");
+    ///t0 = now();
     //mergeSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
-    quickSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
+    //quickSort(arraySortedX, compareX, 0, listSize(Lvalues)-1);
+    quickSortXTest(arraySortedX, 0, listSize(Lvalues)-1);
+    ///t1 = now();
+    ///printf("Tri X: %f s\n", t1 - t0);
 
+    
+    ///t0 = now();
     //mergeSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
-    quickSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
+    //quickSort(arraySortedY, compareY, 0, listSize(Lvalues)-1);
+    quickSortYTest(arraySortedY, 0, listSize(Lvalues)-1);
+    ///t1 = now();
+    ///printf("Tri Y: %f s\n", t1 - t0);
 
     BST2d *bst = bst2dNew();
     size_t n = listSize(Lvalues);
     bool *isLeft = calloc(n, sizeof(bool));
 
+    ///t0 = now();
     bst->root = buildOptBst2d(arraySortedX, arraySortedY, NULL, 0, n-1, true, isLeft);
+    ///t1 = now();
+    ///printf("Build: %f s\n", t1 - t0);
 
     free(isLeft);
 
-    free(arraySortedX); // On a plus besoin de array donc je peux non ? // Je viens de tester avec valgrind, go le laisser, on gagne 160000 bytes
+    free(arraySortedX); 
     free(arraySortedY);
 
     bst->size = listSize(Lvalues);
@@ -240,6 +271,95 @@ void swapPV(PVpair *array, size_t i, size_t j)
 size_t pivotRand(size_t p, size_t q) 
 { 
     return p + (size_t)(rand() % (q - p + 1)); 
+}
+void quickSortXTest(PVpair *array, size_t p, size_t q)
+{
+    if (p >= q) return;
+
+    size_t pivot = pivotRand(p, q);
+    swapPV(array, pivot, q);
+
+    int i = (int)p;
+    int j = (int)q - 1;
+    int k = (int)p;
+
+    while (k <= j)
+    {
+        int comp = compareXTest(array[k].x, array[q].x);
+
+        if (comp < 0)
+        {
+            swapPV(array, (size_t)k, (size_t)i);
+            i++;
+            k++;
+        }
+        else if (comp > 0)
+        {
+            swapPV(array, (size_t)k, (size_t)j);
+            j--;
+        }
+        else
+        {
+            k++;
+        }
+    }
+
+    swapPV(array, (size_t)(j + 1), q);
+
+    if (i - 1 >= (int)p)
+    {
+        quickSortXTest(array, p, (size_t)(i - 1));
+    }
+
+    if (j + 2 <= (int)q)
+    {
+        quickSortXTest(array, (size_t)(j + 2), q);
+    }
+}
+
+void quickSortYTest(PVpair *array, size_t p, size_t q)
+{
+    if (p >= q) return;
+
+    size_t pivot = pivotRand(p, q);
+    swapPV(array, pivot, q);
+
+    int i = (int)p;
+    int j = (int)q - 1;
+    int k = (int)p;
+
+    while (k <= j)
+    {
+        int comp = compareYTest(array[k].y, array[q].y);
+
+        if (comp < 0)
+        {
+            swapPV(array, (size_t)k, (size_t)i);
+            i++;
+            k++;
+        }
+        else if (comp > 0)
+        {
+            swapPV(array, (size_t)k, (size_t)j);
+            j--;
+        }
+        else
+        {
+            k++;
+        }
+    }
+
+    swapPV(array, (size_t)(j + 1), q);
+
+    if (i - 1 >= (int)p)
+    {
+        quickSortYTest(array, p, (size_t)(i - 1));
+    }
+
+    if (j + 2 <= (int)q)
+    {
+        quickSortYTest(array, (size_t)(j + 2), q);
+    }
 }
 
 void quickSort(PVpair *array, int (*compare)(Point *, Point *), size_t p, size_t q)
@@ -358,6 +478,20 @@ int compareY(Point *p1, Point *p2)
     return 0;
 } 
 
+int compareXTest(double x1, double x2)
+{
+    if (x1 <  x2) return -1;
+    if (x1 >  x2) return 1;
+    return 0;
+}
+
+int compareYTest(double y1, double y2)
+{
+    if (y1 < y2) return -1;
+    if (y1 > y2) return 1;
+    return 0;
+} 
+
 
 void pdctFree(PointDct *pd)
 {
@@ -472,26 +606,18 @@ void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
     int comp;
     if(axis)
     {
-        comp = compareX(p,point);
+        comp = compareXTest(ptGetx(p),ptGetx(point));
         axis = false;
     }
     else
     {
-        comp = compareY(p,point);
+        comp = compareYTest(ptGety(p),ptGety(point));
         axis = true;
     }
 
     if(comp < 0) return pdctExactSearchRec(node->left, p, axis);
     else return pdctExactSearchRec(node->right, p, axis);
 }
-
-
-
-
-
-
-
-
 
 // Fonction interne pour explorer larbre
 void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bool axis, List *result)
