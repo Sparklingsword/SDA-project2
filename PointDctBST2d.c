@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <time.h>
-
 #include "PointDct.h"
 
 typedef struct BNode2d_t BNode2d;
@@ -38,7 +36,7 @@ struct PointDct_t
 	BST2d *bst;
 };
 
-double now(void);
+
 
 BST2d *bst2dNew(void);
 BNode2d *bn2dNew(Point *point, void *value);
@@ -58,8 +56,6 @@ void quickSort(PVpair *array, size_t p, size_t q);
 
 int compare(double x1, double x2);
 
-
-static inline void markLeftIds(PVpair *array, bool *isLeft, size_t p, size_t m);
 void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, size_t q);
 BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft);
 
@@ -68,16 +64,9 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY, PVpair *temp,
 void *pdctExactSearch(PointDct *pd, Point *p);
 void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
 
-static inline bool isInBall(double x, double y, double xc, double yc, double rr);
+
 List *pdctBallSearch(PointDct *pd, Point *p, double r);
 void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r, double rr, bool axis, List *result);
-
-
-
-double now()
-{
-    return (double)clock() / CLOCKS_PER_SEC;
-}
 
 /*
     2 Dimensional Bst structure and useful functions for the bst2d
@@ -283,15 +272,6 @@ void quickSort(PVpair *array, size_t p, size_t q)
     Dictionnary functions
 */
 
-
-static inline void markLeftIds(PVpair *array, bool *isLeft, size_t p, size_t m)
-{
-    for(size_t i = p; i < m; i++)
-    {
-        isLeft[array[i].id] = true;
-    }
-}
-
 void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, size_t q) 
 {
     
@@ -341,7 +321,13 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
     {
         node = bn2dNew(arraySortedX[m].point, arraySortedX[m].value);
 
-        markLeftIds(arraySortedX, isLeft, p, m);
+        //marksLeftIds
+        
+        for(size_t i = p; i < m; i++)
+        {
+            isLeft[arraySortedX[i].id] = true;
+        }
+
         tempName(arraySortedY, arraySortedX[m], temp, isLeft, p, q);
         
     }
@@ -349,7 +335,11 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
     {
         node = bn2dNew(arraySortedY[m].point, arraySortedY[m].value);
 
-        markLeftIds(arraySortedY, isLeft, p, m);
+        //marksLeftIds
+        for(size_t i = p; i < m; i++)
+        {
+            isLeft[arraySortedY[i].id] = true;
+        }
         tempName(arraySortedX, arraySortedY[m], temp, isLeft, p, q);
 
     }
@@ -369,9 +359,6 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
 
 PointDct *pdctCreate(List *lpoints, List *Lvalues)
 {
-    printf("\n");
-    double t0, t1;
-
     size_t size = listSize(Lvalues);
     
     if(listSize(lpoints) != size) return NULL;
@@ -385,8 +372,6 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
     PVpair *arraySortedX = malloc(size* sizeof(PVpair));
     PVpair *arraySortedY = malloc(size* sizeof(PVpair));
 	
-    t0 = now();
-
 	for(size_t i = 0; pointNode != NULL; i++)
 	{
         arraySortedX[i].point = pointNode->value;
@@ -403,22 +388,10 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 		valNode = valNode->next;
     }
 
-    t1 = now();
-    printf("Création arrays: %f s\n", t1 - t0);
-
-
-    t0 = now();
     quickSort(arraySortedX, 0, size-1);
-    t1 = now();
-    printf("Tri X: %f s\n", t1 - t0);
-
     
-    t0 = now();
     quickSort(arraySortedY, 0, size-1);
-    t1 = now();
-    printf("Tri Y: %f s\n", t1 - t0);
-
-
+   
     BST2d *bst = bst2dNew();
 
     bool *isLeft = calloc(size, sizeof(bool));
@@ -427,13 +400,8 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
     PVpair *temp = malloc(size * sizeof(PVpair));
     if(!temp) return  NULL;
 
-
-    t0 = now();
     bst->root = buildOptBst2d(arraySortedX, arraySortedY, temp, NULL, 0, size-1, true, isLeft);
-    t1 = now();
-    printf("Build: %f s\n", t1 - t0);
-
-
+    
     free(arraySortedX); 
     free(arraySortedY);
     free(temp);
@@ -500,14 +468,6 @@ void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
     else return pdctExactSearchRec(node->right, p, axis);
 }
 
-
-static inline bool isInBall(double x, double y, double xc, double yc, double rr)
-{
-    if((x-xc)*(x-xc) + (y-yc)*(y-yc) <= rr) return true;
-    else return false;
-
-}
-
 // Fonction interne pour explorer larbre
 void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bool axis, List *result)
 {
@@ -516,7 +476,8 @@ void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bo
     double x = ptGetx(node->point);
     double y = ptGety(node->point);
 
-    if(isInBall(x, y, xc, yc, rr))
+    //Verifies if the point is in the ball
+    if((x-xc)*(x-xc) + (y-yc)*(y-yc) <= rr) 
         listInsertLast(result, node->value);
 
     double dist;
