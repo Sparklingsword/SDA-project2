@@ -4,6 +4,8 @@
 #include "BST.h"
 #include "PointDct.h"
 
+static uint64_t interleave8(uint8_t m, uint8_t n);
+
 /* ------------------------------------------------------------------------- *
  * Returns the morton code (or z-code) associated to the (x,y) coordinates
  * in argument. The x and y values are expected to be uint32_t integer between
@@ -18,7 +20,6 @@
  *
  * ------------------------------------------------------------------------- */
 
-
 static uint64_t zEncode(uint32_t x, uint32_t y) {
 	uint64_t out = 0;
 	for (uint8_t byte = 0; byte < 4; ++byte) {
@@ -26,8 +27,6 @@ static uint64_t zEncode(uint32_t x, uint32_t y) {
 	}
 	return out;
 }
-
-static uint64_t interleave8(uint8_t m, uint8_t n);
 
 static uint64_t interleave8(uint8_t m, uint8_t n) {
 	return (
@@ -62,8 +61,8 @@ int isInBall(Point *current, Point *ref, double r);
 
 int comparisonZ(void* a, void* b) 
 {
-	uint64_t *z1 = (uint64_t*) a;
-	uint64_t *z2 = (uint64_t*) b;
+	uint64_t *z1 = (uint64_t*)a;
+	uint64_t *z2 = (uint64_t*)b;
 
 	if(*z1 < *z2)
 		return -1;
@@ -71,8 +70,7 @@ int comparisonZ(void* a, void* b)
 	else if(*z1 == *z2)
 		return 0;
 
-	else
-		return 1;
+	else return 1;
 }
 
 MinMax getMinMax(List *lpoints)
@@ -82,7 +80,6 @@ MinMax getMinMax(List *lpoints)
 	double minY = ptGety(first);
 	double maxX = ptGetx(first);
 	double maxY = ptGety(first);
-	
 	for(LNode *n = lpoints->head; n; n = n->next)
 	{
 		Point *currentPoint = (Point *) n->value;
@@ -124,7 +121,8 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 	List *lz = listNew();
 	List *pairList = listNew();
 
-	if(listSize(lpoints) != listSize(Lvalues)) return NULL;
+	if(listSize(lpoints) != listSize(Lvalues))
+		return NULL;
 
 	LNode *pointNode = lpoints->head;
 	LNode *valNode = Lvalues->head;
@@ -197,7 +195,7 @@ void *pdctExactSearch(PointDct *pd, Point *p)
 	{
 		PVpair *pair = (PVpair*) n->value;
 
-		if(ptCompare(pair->point,p) == 0) 
+		if(ptCompare(pair->point, p) == 0) 
 		{
 			listFree(l, false);
 			return pair->value;
@@ -205,9 +203,8 @@ void *pdctExactSearch(PointDct *pd, Point *p)
 	}
 
 	listFree(l, false);
-	return NULL;	
+	return NULL;
 }
-
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
 {
@@ -249,7 +246,7 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 		}
 	}
 
-	listFree(l,false);
+	listFree(l, false);
 
 	return result;
 }
