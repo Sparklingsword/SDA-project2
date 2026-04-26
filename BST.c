@@ -59,7 +59,6 @@ void quickSortKV(KVpair *pairList,int comparison_fn_t(void *, void *),size_t p,s
 size_t pivotRand(size_t p, size_t q);
 void swapKV(KVpair *pairList, size_t i, size_t j);
 
-
 BNode *bnNew(void *key, void *value)
 {
     BNode *n = malloc(sizeof(BNode));
@@ -70,7 +69,7 @@ BNode *bnNew(void *key, void *value)
     }
     n->left = NULL;
     n->right = NULL;
-    n->parent = NULL; // modif annonce prof
+    n->parent = NULL;
     n->key = key;
     n->value = value;
     return n;
@@ -104,8 +103,10 @@ void bstFreeRec(BNode *n, bool freeKey, bool freeValue)
     bstFreeRec(n->right, freeKey, freeValue);
     if (freeKey)
         free(n->key);
+
     if (freeValue)
         free(n->value);
+
     free(n);
 }
 
@@ -129,7 +130,7 @@ static size_t bstHeightRec(BNode *root)
 
 size_t bstHeight(BST *bst)
 {
-    return bstHeightRec(bst->root) -1 ; //modif prof
+    return bstHeightRec(bst->root)-1;
 }
 
 bool bstInsert(BST *bst, void *key, void *value)
@@ -223,12 +224,11 @@ static BNode *successor(BNode *n)
 // ----------------------------------------------------------------------------------
 // The functions below have to be implemented
 
-BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lvalues) //finito (MergeSort est plus rapide que quicksort)
+BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lvalues)
 {
     if(!lkeys || !lvalues)
-    {
+
         return NULL;
-    }
 
     LNode *keyNode = lkeys->head;
     LNode *valNode = lvalues->head;
@@ -236,19 +236,13 @@ BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lva
     size_t nbrKeys = listSize(lkeys);
     size_t nbrValues = listSize(lvalues);
 
-    
-
     if(nbrKeys != nbrValues)
-    {
         return NULL;
-    }
 
     KVpair *pairList = malloc(nbrValues*sizeof(KVpair));
 
     if(!pairList)
-    {
         return NULL;
-    }
 
     for(size_t i = 0; i < nbrKeys; i++)
     {
@@ -262,25 +256,21 @@ BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lva
     KVpair *temp = malloc(nbrValues * sizeof(KVpair));
 
     if(!temp)
-    {
         return NULL;
-    }
 
-    mergeSortKV(pairList, temp, comparison_fn_t, 0, nbrValues-1);
-    //quickSortKV(pairList,comparison_fn_t, 0, nbrValues-1);
-    
+    mergeSortKV(pairList, temp, comparison_fn_t, 0, nbrValues - 1);
 
     free(temp);
 
     BST *bst = bstNew(comparison_fn_t);
 
-    bst->root = buildOptBst(pairList,NULL,0,nbrValues-1);
+    bst->root = buildOptBst(pairList, NULL, 0, nbrValues - 1);
     free(pairList);
     bst->size = nbrValues;
     return bst;
 }
 
-void mergeSortKV(KVpair *pairList,KVpair *temp, int comparison_fn_t(void *, void *),size_t p, size_t q)
+void mergeSortKV(KVpair *pairList, KVpair *temp, int comparison_fn_t(void *, void *), size_t p, size_t q)
 {
     if(p < q)
         {
@@ -301,14 +291,14 @@ void mergeSortKV(KVpair *pairList,KVpair *temp, int comparison_fn_t(void *, void
                     continue;
                 }
 
-                if(j == q+1)
+                if(j == q + 1)
                 {
                     temp[k] = pairList[i];
                     i++;
                     continue;
                 }
 
-                comp = comparison_fn_t(pairList[i].key,pairList[j].key);
+                comp = comparison_fn_t(pairList[i].key, pairList[j].key);
 
                 if(comp <= 0) 
                 {
@@ -334,46 +324,37 @@ void mergeSortKV(KVpair *pairList,KVpair *temp, int comparison_fn_t(void *, void
 
 BNode *buildOptBst(KVpair *pairList,BNode *parent, size_t p, size_t q) 
 {
-    if(p>q)
-    {
+    if(p > q)
         return NULL;
-    }
 
     size_t m = p + (q - p)/2;
 
     BNode *node = bnNew(pairList[m].key,pairList[m].value);
+
     if(!node)
-    {
         return NULL;
-    }
 
     node->parent = parent;
 
     if(p < m)
-    {
         node->left = buildOptBst(pairList,node,p,m-1);
-    }
 
     node->right = buildOptBst(pairList,node,m+1,q);
 
     return node;
 }
 
-List *bstRangeSearch(BST *bst, void *keymin, void *keymax) //finito
+List *bstRangeSearch(BST *bst, void *keymin, void *keymax)
 {
     List *list = listNew();
     
     if(!bst || !bst->root)
-    {
         return list;
-    }
 
     BNode *node = bstRangeSearchKeymin(bst->root, keymin, bst->compfn);
 
     if(!node)
-    {
         return list;
-    }
 
     for(;node && bst->compfn(node->key,keymax) <= 0; node = successor(node))
     {
@@ -386,40 +367,33 @@ List *bstRangeSearch(BST *bst, void *keymin, void *keymax) //finito
 BNode *bstRangeSearchKeymin(BNode *node, void *keymin, int (*compfn)(void *, void *))
 {
     if(!node)
-    {
         return NULL;
-    }
 
-    if(compfn(node->key,keymin) < 0)    
-    {
-        return bstRangeSearchKeymin(node->right,keymin,compfn);
-    }
+    if(compfn(node->key, keymin) < 0)    
+        return bstRangeSearchKeymin(node->right, keymin, compfn);
 
     else
     {
         BNode *test = bstRangeSearchKeymin(node->left,keymin,compfn);
+
         if(test)
-        {
             return test;
-        }
+
         return node;
     }
 }
 
-double bstAverageNodeDepth(BST *bst) //finito
+double bstAverageNodeDepth(BST *bst)
 {
     if(!bst || !bst->root)
-    {
         return -1;
-    }
 
     size_t nbrNode = 0;
     size_t Depth = 0;
 
-
     size_t sumDepth = calcBstAverageNodeDepth(bst->root, &nbrNode, Depth);
 
-    double result = (double) sumDepth/nbrNode;
+    double result = (double)sumDepth/nbrNode;
     return result;
 }
 
@@ -430,30 +404,24 @@ size_t calcBstAverageNodeDepth(BNode *node, size_t *nbrNode, size_t Depth)
     size_t sumRight = 0;
 
     if(node->left)
-    {
         sumLeft = calcBstAverageNodeDepth(node->left,nbrNode, Depth+1);
-    }
 
     if(node->right)
-    {
         sumRight = calcBstAverageNodeDepth(node->right, nbrNode, Depth+1);
-    }
 
     return sumLeft + Depth + sumRight;
 }
 
-
 void quickSortKV(KVpair *pairList,int comparison_fn_t(void *, void *),size_t p,size_t q)
 {
-    
+    if(p >= q)
+        return;
 
-    if(p >= q)return;
-
-    size_t pivot = pivotRand(p,q);
-    swapKV(pairList,pivot,q);
+    size_t pivot = pivotRand(p, q);
+    swapKV(pairList, pivot, q);
 
     int i = p;
-    int j = q-1;
+    int j = q - 1;
     int k = p;
     while(k <= j)
     {
@@ -471,23 +439,18 @@ void quickSortKV(KVpair *pairList,int comparison_fn_t(void *, void *),size_t p,s
             swapKV(pairList,k,j);
             j--;
         }
+
         else
-        {
             k++;
-        }
     }
 
     swapKV(pairList,j+1,q);
 
     if(i - 1 >= (int)p)
-    {
-        quickSortKV(pairList,comparison_fn_t, p, i-1);
-    }
+        quickSortKV(pairList, comparison_fn_t, p, i - 1);
 
-    if(j+2 <= (int) q)
-    {
-      quickSortKV(pairList,comparison_fn_t, j+2,  q);  
-    } 
+    if(j + 2 <= (int)q)
+      quickSortKV(pairList, comparison_fn_t, j + 2,  q);  
 }
 
 void swapKV(KVpair *pairList, size_t i, size_t j)
@@ -499,6 +462,5 @@ void swapKV(KVpair *pairList, size_t i, size_t j)
 
 size_t pivotRand(size_t p, size_t q) 
 { 
-    return p + (size_t) (rand()%(q-p+1)); 
+    return p + (size_t)(rand()%(q - p + 1)); 
 }
-
