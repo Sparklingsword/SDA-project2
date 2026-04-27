@@ -38,8 +38,6 @@ struct PointDct_t
 	BST2d *bst;
 };
 
-
-
 BST2d *bst2dNew(void);
 BNode2d *bn2dNew(Point *point, void *value);
 void bst2dFree(BST2d *bst, bool freePoint, bool freeValue);
@@ -48,30 +46,25 @@ size_t bst2dSize(BST2d *bst);
 size_t bst2dHeight(BST2d *bst);
 static size_t bst2dHeightRec(BNode2d *root);
 double bst2dAverageNodeDepth(BST2d *bst);
-size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t Depth);
-
+size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t depth);
 
 size_t medianOfThree(PVpair *array, size_t p, size_t q);
 void swapPV(PVpair *array, size_t i, size_t j);
 void quickSort(PVpair *array, size_t p, size_t q);
-
 
 int compare(double x1, double x2);
 
 void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, size_t q);
 BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft);
 
-
-
 void *pdctExactSearch(PointDct *pd, Point *p);
 void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
-
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r);
 void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r, double rr, bool axis, List *result);
 
 /*
-    2 Dimensional Bst structure and useful functions for the bst2d
+    2 Dimensional BST structure and useful functions for the BST2d
 */
 
 BST2d *bst2dNew()
@@ -86,7 +79,6 @@ BST2d *bst2dNew()
     bst->size = 0;
     return bst;
 }
-
 
 BNode2d *bn2dNew(Point *point, void *value) 
 {
@@ -103,7 +95,6 @@ BNode2d *bn2dNew(Point *point, void *value)
     n->value = value;
     return n;
 }
-
 
 void bst2dFree(BST2d *bst, bool freePoint, bool freeValue)
 {
@@ -124,12 +115,10 @@ void bst2dFreeRec(BNode2d *n, bool freePoint, bool freeValue)
     free(n);
 }
 
-
 size_t bst2dSize(BST2d *bst)
 {
     return bst->size;
 }
-
 
 static size_t bst2dHeightRec(BNode2d *root)
 {
@@ -149,8 +138,7 @@ size_t bst2dHeight(BST2d *bst)
     return bst2dHeightRec(bst->root);
 }
 
-
-double bst2dAverageNodeDepth(BST2d *bst) //finito
+double bst2dAverageNodeDepth(BST2d *bst)
 {
     if(!bst || !bst->root)
     {
@@ -158,32 +146,27 @@ double bst2dAverageNodeDepth(BST2d *bst) //finito
     }
 
     size_t nbrNode = 0;
-    size_t Depth = 0;
+    size_t depth = 0;
 
-
-    size_t sumDepth = calcBst2dAverageNodeDepth(bst->root, &nbrNode, Depth);
+    size_t sumDepth = calcBst2dAverageNodeDepth(bst->root, &nbrNode, depth);
 
     double result = (double) sumDepth/nbrNode;
     return result;
 }
 
-size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t Depth)
+size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t depth)
 {
     (*nbrNode)++;
     size_t sumLeft = 0;
     size_t sumRight = 0;
 
     if(node->left)
-    {
-        sumLeft = calcBst2dAverageNodeDepth(node->left,nbrNode, Depth+1);
-    }
+        sumLeft = calcBst2dAverageNodeDepth(node->left,nbrNode, depth+1);
 
     if(node->right)
-    {
-        sumRight = calcBst2dAverageNodeDepth(node->right, nbrNode, Depth+1);
-    }
+        sumRight = calcBst2dAverageNodeDepth(node->right, nbrNode, depth+1);
 
-    return sumLeft + Depth + sumRight;
+    return sumLeft + depth + sumRight;
 }
 
 /*
@@ -192,11 +175,14 @@ size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t Depth)
 
 int compare(double x1, double x2)
 {
-    if (x1 <  x2) return -1;
-    else if (x1 >  x2) return 1;
+    if(x1 < x2)
+        return -1;
+
+    else if(x1 > x2)
+        return 1;
+
     else return 0;
 }
-
 
 void swapPV(PVpair *array, size_t i, size_t j)
 {
@@ -205,10 +191,9 @@ void swapPV(PVpair *array, size_t i, size_t j)
     array[j] = temp;
 }
 
-
 size_t medianOfThree(PVpair *array, size_t p, size_t q)
 {
-    size_t m = p + (q - p) / 2;
+    size_t m = p + (q - p)/2;
 
     if (compare(array[p].xy, array[m].xy) > 0)
         swapPV(array,p,m);
@@ -222,10 +207,10 @@ size_t medianOfThree(PVpair *array, size_t p, size_t q)
     return m;
 }
 
-
 void quickSort(PVpair *array, size_t p, size_t q)
 {
-    if (p >= q) return;
+    if (p >= q)
+        return;
 
     size_t pivot = medianOfThree(array, p, q);
     swapPV(array, pivot, q);
@@ -244,31 +229,25 @@ void quickSort(PVpair *array, size_t p, size_t q)
             i++;
             k++;
         }
+
         else if (comp > 0)
         {
             swapPV(array, (size_t)k, (size_t)j);
             j--;
         }
+
         else
-        {
             k++;
-        }
     }
 
     swapPV(array, (size_t)(j + 1), q);
 
     if (i - 1 >= (int)p)
-    {
         quickSort(array, p, (size_t)(i - 1));
-    }
 
     if (j + 2 <= (int)q)
-    {
         quickSort(array, (size_t)(j + 2), q);
-    }
 }
-
-
 
 /*
     Dictionnary functions
@@ -276,8 +255,6 @@ void quickSort(PVpair *array, size_t p, size_t q)
 
 void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, size_t q) 
 {
-    
-
     size_t leftSize = (q - p)/2;
     size_t i = 0;
     size_t j = leftSize + 1;
@@ -288,12 +265,14 @@ void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, s
         {
             temp[leftSize] = array[k];
         }
+
         else if(isLeft[array[k].id])
         {
             temp[i] = array[k];
             isLeft[array[k].id] = false;
             i++;
         }
+
         else
         {
             temp[j] = array[k];
@@ -305,16 +284,12 @@ void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, s
     {
         array[p+k] = temp[k];
     }
-
-
 }
 
 BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft)
 {
     if(p > q)
-    {
         return NULL;
-    }
 
     size_t m = p + (q - p)/2;
     BNode2d *node;
@@ -323,8 +298,7 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
     {
         node = bn2dNew(arraySortedX[m].point, arraySortedX[m].value);
 
-        //marksLeftIds
-        
+        // marks Left Ids
         for(size_t i = p; i < m; i++)
         {
             isLeft[arraySortedX[i].id] = true;
@@ -336,15 +310,17 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
         node->y = arraySortedY[m].xy;
         
     }
+
     else
     {
         node = bn2dNew(arraySortedY[m].point, arraySortedY[m].value);
 
-        //marksLeftIds
+        // marks Left Ids
         for(size_t i = p; i < m; i++)
         {
             isLeft[arraySortedY[i].id] = true;
         }
+
         tempName(arraySortedX, arraySortedY[m], temp, isLeft, p, q);
 
         node->x = arraySortedX[m].xy;
@@ -353,14 +329,14 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
     }
 
     if(!node)
-    {
         return NULL;
-    }
 
     node->parent = parent;
-    if(p < m) node->left = buildOptBst2d(arraySortedX, arraySortedY, temp, node, p, m-1, !axis, isLeft);
+
+    if(p < m)
+        node->left = buildOptBst2d(arraySortedX, arraySortedY, temp, node, p, m - 1, !axis, isLeft);
     
-    node->right = buildOptBst2d(arraySortedX, arraySortedY, temp, node, m+1, q, !axis, isLeft);
+    node->right = buildOptBst2d(arraySortedX, arraySortedY, temp, node, m + 1, q, !axis, isLeft);
 
     return node;
 }
@@ -369,10 +345,12 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 {
     size_t size = listSize(Lvalues);
     
-    if(listSize(lpoints) != size) return NULL;
+    if(listSize(lpoints) != size)
+        return NULL;
 
     PointDct *pd = malloc(sizeof(PointDct));
-	if(!pd) return NULL;
+	if(!pd)
+        return NULL;
 
 	LNode *pointNode = lpoints->head;
 	LNode *valNode = Lvalues->head;
@@ -396,17 +374,19 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 		valNode = valNode->next;
     }
 
-    quickSort(arraySortedX, 0, size-1);
+    quickSort(arraySortedX, 0, size - 1);
     
-    quickSort(arraySortedY, 0, size-1);
+    quickSort(arraySortedY, 0, size - 1);
    
     BST2d *bst = bst2dNew();
 
     bool *isLeft = calloc(size, sizeof(bool));
-    if(!isLeft) return NULL;
+    if(!isLeft)
+        return NULL;
 
     PVpair *temp = malloc(size * sizeof(PVpair));
-    if(!temp) return  NULL;
+    if(!temp)
+        return NULL;
 
     bst->root = buildOptBst2d(arraySortedX, arraySortedY, temp, NULL, 0, size-1, true, isLeft);
     
@@ -420,25 +400,21 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 	return pd;
 }
 
-
 void pdctFree(PointDct *pd)
 {
-	bst2dFree(pd->bst,false,false);
+	bst2dFree(pd->bst, false, false);
 	free(pd);
 }
-
 
 size_t pdctSize(PointDct *pd)
 {
 	return bst2dSize(pd->bst);
 }
 
-
 size_t pdctHeight(PointDct *pd)
 {
 	return bst2dHeight(pd->bst) -1;
 }
-
 
 size_t pdctAverageNodeDepth(PointDct *pd)
 {
@@ -451,35 +427,45 @@ size_t pdctAverageNodeDepth(PointDct *pd)
 
 void *pdctExactSearch(PointDct *pd, Point *p)
 {
-    return pdctExactSearchRec(pd->bst->root,p,true);
+    return pdctExactSearchRec(pd->bst->root, p, true);
 }
 
 void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
 {
-    if(!node) return NULL;
+    if(!node)
+        return NULL;
+
     Point *point = node->point;
-    if(ptCompare(point,p) == 0) return node->value;
+
+    if(ptCompare(point,p) == 0)
+        return node->value;
 
     int comp;
+
     if(axis)
     {
         comp = compare(ptGetx(p),ptGetx(point));
         axis = false;
     }
+
     else
     {
         comp = compare(ptGety(p),ptGety(point));
         axis = true;
     }
 
-    if(comp < 0) return pdctExactSearchRec(node->left, p, axis);
-    else return pdctExactSearchRec(node->right, p, axis);
+    if(comp < 0)
+        return pdctExactSearchRec(node->left, p, axis);
+
+    else
+        return pdctExactSearchRec(node->right, p, axis);
 }
 
-// Fonction interne pour explorer larbre
+// Internal function to explore the tree
 void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bool axis, List *result)
 {
-    if (node == NULL) return;
+    if (node == NULL)
+        return;
 
     double dx = node->x - xc;
     double dy = node->y - yc;
@@ -505,6 +491,7 @@ void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bo
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
 {
     List *result = listNew();
+
     if(!result)
         return NULL;
 
@@ -518,7 +505,3 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 
     return result;
 }
-
-
-
-

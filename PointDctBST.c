@@ -6,8 +6,6 @@
 
 static uint64_t interleave8(uint8_t m, uint8_t n);
 
-
-
 /* ------------------------------------------------------------------------- *
  * Returns the morton code (or z-code) associated to the (x,y) coordinates
  * in argument. The x and y values are expected to be uint32_t integer between
@@ -22,7 +20,6 @@ static uint64_t interleave8(uint8_t m, uint8_t n);
  *
  * ------------------------------------------------------------------------- */
 
-
 static uint64_t zEncode(uint32_t x, uint32_t y) {
 	uint64_t out = 0;
 	for (uint8_t byte = 0; byte < 4; ++byte) {
@@ -30,8 +27,6 @@ static uint64_t zEncode(uint32_t x, uint32_t y) {
 	}
 	return out;
 }
-
-
 
 static uint64_t interleave8(uint8_t m, uint8_t n) {
 	return (
@@ -59,22 +54,22 @@ typedef struct pvpair_t
     void *value;
 } PVpair;
 
-
-
 int comparisonZ(void* a, void* b);
 MinMax getMinMax(List *lpoints);
-uint32_t normalizeUint32(double x,double min,double max);
-int isInBall(Point *current,Point *ref,double r);
-
-
+uint32_t normalizeUint32(double x, double min, double max);
+int isInBall(Point *current, Point *ref, double r);
 
 int comparisonZ(void* a, void* b) 
 {
-	uint64_t *z1 = (uint64_t*) a;
-	uint64_t *z2 = (uint64_t*) b;
+	uint64_t *z1 = (uint64_t*)a;
+	uint64_t *z2 = (uint64_t*)b;
 
-	if(*z1 < *z2) return -1;
-	else if(*z1 == *z2) return 0;
+	if(*z1 < *z2)
+		return -1;
+
+	else if(*z1 == *z2)
+		return 0;
+
 	else return 1;
 }
 
@@ -107,23 +102,27 @@ MinMax getMinMax(List *lpoints)
 	return minmax;
 }
 
-uint32_t normalizeUint32(double x,double min,double max) //idée de gpt 
+uint32_t normalizeUint32(double x, double min, double max) 
 {
-	if(max == min) return 0;
-	return (x-min)/(max-min) * UINT32_MAX;
+	if(max == min)
+		return 0;
+
+	return (x-min)/(max-min)*UINT32_MAX;
 }
 
 PointDct *pdctCreate(List *lpoints, List *Lvalues)
 {
 	PointDct *pd = malloc(sizeof(PointDct));
-	if(!pd) return NULL;
+	if(!pd)
+		return NULL;
 
 	MinMax minmax = getMinMax(lpoints);
 
 	List *lz = listNew();
 	List *pairList = listNew();
 
-	if(listSize(lpoints) != listSize(Lvalues)) return NULL;
+	if(listSize(lpoints) != listSize(Lvalues))
+		return NULL;
 
 	LNode *pointNode = lpoints->head;
 	LNode *valNode = Lvalues->head;
@@ -134,7 +133,7 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 		
 		uint64_t *z = malloc(sizeof(uint64_t));
 
-		pair->point = (Point *) pointNode->value;
+		pair->point = (Point *)pointNode->value;
 		pair->value = valNode->value;
 
 		uint32_t normalizedX = normalizeUint32(ptGetx(pair->point), minmax.minX, minmax.maxX);
@@ -142,10 +141,9 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 
 		*z = zEncode(normalizedX, normalizedY);
 
-		listInsertLast(lz,z);
-		listInsertLast(pairList,pair);
+		listInsertLast(lz, z);
+		listInsertLast(pairList, pair);
 		
-
 		pointNode = pointNode->next;
 		valNode = valNode->next;
 	}
@@ -164,7 +162,7 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 
 void pdctFree(PointDct *pd)
 {
-	bstFree(pd->bst,true,true);
+	bstFree(pd->bst, true, true);
 	free(pd);
 }
 
@@ -190,31 +188,30 @@ void *pdctExactSearch(PointDct *pd, Point *p)
 	uint32_t normalizedX = normalizeUint32(ptGetx(p), minmax.minX, minmax.maxX);
 	uint32_t normalizedY = normalizeUint32(ptGety(p), minmax.minY, minmax.maxY);
 
-	uint64_t z = zEncode(normalizedX,normalizedY);
-	List *l = bstRangeSearch(pd->bst,&z,&z);
+	uint64_t z = zEncode(normalizedX, normalizedY);
+	List *l = bstRangeSearch(pd->bst, &z, &z);
 
 	for(LNode *n = l->head; n; n = n->next)
 	{
 		PVpair *pair = (PVpair*) n->value;
 
-		if(ptCompare(pair->point,p) == 0) 
+		if(ptCompare(pair->point, p) == 0) 
 		{
 			listFree(l, false);
 			return pair->value;
 		}
 	}
+
 	listFree(l, false);
 	return NULL;
-	
 }
-
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
 {
 	MinMax minmax = pd->minmax;
 
-	double x1 = ptGetx(p)-r;
-	double y1 = ptGety(p)-r;
+	double x1 = ptGetx(p) - r;
+	double y1 = ptGety(p) - r;
 
 	if(x1 < minmax.minX) x1 = minmax.minX;
 	if(y1 < minmax.minY) y1 = minmax.minY;
@@ -224,8 +221,8 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 
 	uint64_t z1 = zEncode(normalizedX1,normalizedY1);
 
-	double x2 = ptGetx(p)+r;
-	double y2 = ptGety(p)+r;
+	double x2 = ptGetx(p) + r;
+	double y2 = ptGety(p) + r;
 
 	if(x2 > minmax.maxX) x2 = minmax.maxX;
 	if(y2 > minmax.maxY) y2 = minmax.maxY;
@@ -235,7 +232,7 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 
 	uint64_t z2 = zEncode(normalizedX2,normalizedY2);
 
-	List *l = bstRangeSearch(pd->bst,&z1,&z2);
+	List *l = bstRangeSearch(pd->bst, &z1, &z2);
 
 	List *result = listNew();
 
@@ -249,7 +246,7 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 		}
 	}
 
-	listFree(l,false);
+	listFree(l, false);
 
 	return result;
 }
@@ -262,7 +259,8 @@ int isInBall(Point *current,Point *ref,double r)
 	double xc = ptGetx(ref);
 	double yc = ptGety(ref);
 
-	if( (x-xc)*(x-xc) + (y-yc)*(y-yc) <= r*r ) return 1;
+	if((x-xc)*(x-xc) + (y-yc)*(y-yc) <= r*r)
+		return 1;
 
 	return 0;
 }
