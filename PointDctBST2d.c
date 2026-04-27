@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <time.h>
 
 #include "PointDct.h"
 
@@ -38,6 +39,13 @@ struct PointDct_t
 	BST2d *bst;
 };
 
+double now(void);
+
+double now()
+{
+    return (double)clock() / CLOCKS_PER_SEC;
+}
+
 BST2d *bst2dNew(void);
 BNode2d *bn2dNew(Point *point, void *value);
 void bst2dFree(BST2d *bst, bool freePoint, bool freeValue);
@@ -48,7 +56,7 @@ static size_t bst2dHeightRec(BNode2d *root);
 double bst2dAverageNodeDepth(BST2d *bst);
 size_t calcBst2dAverageNodeDepth(BNode2d *node, size_t *nbrNode, size_t depth);
 
-size_t medianOfThree(PVpair *array, size_t p, size_t q);
+void medianOfThree(PVpair *array, size_t p, size_t q);
 void swapPV(PVpair *array, size_t i, size_t j);
 void quickSort(PVpair *array, size_t p, size_t q);
 
@@ -191,20 +199,37 @@ void swapPV(PVpair *array, size_t i, size_t j)
     array[j] = temp;
 }
 
-size_t medianOfThree(PVpair *array, size_t p, size_t q)
+void medianOfThree(PVpair *array, size_t p, size_t q)
 {
-    size_t m = p + (q - p)/2;
+    size_t m = p + (q - p) / 2;
 
-    if (compare(array[p].xy, array[m].xy) > 0)
-        swapPV(array,p,m);
+    int compPM = compare(array[p].xy, array[m].xy);
+    int compMQ = compare(array[m].xy, array[q].xy);
 
-    if (compare(array[p].xy, array[q].xy) > 0)
-        swapPV(array,p,q);
+    if (compPM <= 0 && compMQ <= 0) // p <= m <= q
+    {
+        swapPV(array, m, q);   
+        return;
+    }
 
-    if (compare(array[m].xy, array[q].xy) > 0)
-        swapPV(array,m,q);
+    else if (compPM >= 0 && compMQ >= 0) // p >= m >= q
+    {
+        swapPV(array, m, q);   
+        return;
+    }
 
-    return m;
+    int compPQ = compare(array[p].xy, array[q].xy);
+
+    if (compPQ <= 0 && compPM > 0) //  q >= p > m
+    {
+        swapPV(array, p, q); 
+    }
+
+    else if(compPQ >= 0 && compPM < 0) // q <= p < m 
+    {
+        swapPV(array, p, q); 
+    }
+
 }
 
 void quickSort(PVpair *array, size_t p, size_t q)
@@ -212,8 +237,7 @@ void quickSort(PVpair *array, size_t p, size_t q)
     if (p >= q)
         return;
 
-    size_t pivot = medianOfThree(array, p, q);
-    swapPV(array, pivot, q);
+    medianOfThree(array, p, q);
 
     int i = (int)p;
     int j = (int)q - 1;
@@ -343,6 +367,7 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
 
 PointDct *pdctCreate(List *lpoints, List *Lvalues)
 {
+    double t0,t1;
     size_t size = listSize(Lvalues);
     
     if(listSize(lpoints) != size)
@@ -374,21 +399,33 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 		valNode = valNode->next;
     }
 
-    quickSort(arraySortedX, 0, size - 1);
+    printf("\n");
+
+    t0 = now();
+    quickSort(arraySortedX, 0, size-1);
+    t1 = now();
+    printf("Tri X: %f s\n", t1 - t0);
+
     
-    quickSort(arraySortedY, 0, size - 1);
-   
+    t0 = now();
+    quickSort(arraySortedY, 0, size-1);
+    t1 = now();
+    printf("Tri Y: %f s\n", t1 - t0);
+
+
     BST2d *bst = bst2dNew();
 
     bool *isLeft = calloc(size, sizeof(bool));
-    if(!isLeft)
-        return NULL;
+    if(!isLeft) return NULL;
 
     PVpair *temp = malloc(size * sizeof(PVpair));
-    if(!temp)
-        return NULL;
+    if(!temp) return  NULL;
 
+
+    t0 = now();
     bst->root = buildOptBst2d(arraySortedX, arraySortedY, temp, NULL, 0, size-1, true, isLeft);
+    t1 = now();
+    printf("Build: %f s\n", t1 - t0);
     
     free(arraySortedX); 
     free(arraySortedY);
