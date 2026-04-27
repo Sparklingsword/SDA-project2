@@ -15,6 +15,8 @@ struct BNode2d_t
     BNode2d *parent;
     BNode2d *left;
     BNode2d *right;
+    double x;
+    double y;
 };
 
 typedef struct BST2d_t
@@ -329,6 +331,9 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
         }
 
         tempName(arraySortedY, arraySortedX[m], temp, isLeft, p, q);
+
+        node->x = arraySortedX[m].xy;
+        node->y = arraySortedY[m].xy;
         
     }
     else
@@ -341,6 +346,9 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
             isLeft[arraySortedY[i].id] = true;
         }
         tempName(arraySortedX, arraySortedY[m], temp, isLeft, p, q);
+
+        node->x = arraySortedX[m].xy;
+        node->y = arraySortedY[m].xy;
 
     }
 
@@ -473,19 +481,19 @@ void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bo
 {
     if (node == NULL) return;
 
-    double x = ptGetx(node->point);
-    double y = ptGety(node->point);
+    double dx = node->x - xc;
+    double dy = node->y - yc;
 
     //Verifies if the point is in the ball
-    if((x-xc)*(x-xc) + (y-yc)*(y-yc) <= rr) 
+    if(dx*dx + dy*dy <= rr) 
         listInsertLast(result, node->value);
 
     double dist;
         
     if(axis)
-        dist = xc - x;
+        dist = -dx;
     else
-        dist = yc - y;
+        dist = -dy;
 
     if (dist < r) 
         pdctBallSearchRec(node->left, xc, yc, r,rr, !axis, result);
