@@ -1,0 +1,292 @@
+Tests SDA Projet 2
+=================
+
+EXPÉRIENCE 1 : rayon fixe r=0.01, recherches=10000
+--------------------------------------------------
+
+N = 10000, Q = 10000, r = 0.01
+LIST:
+Preparation:
+   Generating 20000 points...Done
+   Creation of the dictionary (10000 points)...Done in 0.000000s
+   (Size:10000, height=0, average node depth=0)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.218750s
+   10000 negative searches...Done in 0.250000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 0.312500s
+   Average list size: 3.118300
+
+BST:
+Preparation:
+   Generating 20000 points...Done
+   Creation of the dictionary (10000 points)...Done in 0.000000s
+   (Size:10000, height=13, average node depth=11)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.000000s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 0.078125s
+   Average list size: 3.118300
+
+BST2D:
+Preparation:
+   Generating 20000 points...Done
+   Creation of the dictionary (10000 points)...
+Tri X: 0.000000 s
+Tri Y: 0.000000 s
+Build: 0.000000 s
+Done in 0.000000s
+   (Size:10000, height=13, average node depth=11)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.000000s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 0.015625s
+   Average list size: 3.118300
+
+N = 100000, Q = 10000, r = 0.01
+LIST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.000000s
+   (Size:100000, height=0, average node depth=0)
+
+Testing exact searches:
+   10000 positive searches...Done in 2.468750s
+   10000 negative searches...Done in 2.546875s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 3.468750s
+   Average list size: 31.146500
+
+BST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.031250s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.015625s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 1.156250s
+   Average list size: 31.146500
+
+BST2D:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...
+Tri X: 0.015625 s
+Tri Y: 0.031250 s
+Build: 0.015625 s
+Done in 0.062500s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.000000s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 0.015625s
+   Average list size: 31.146500
+
+N = 1000000, Q = 10000, r = 0.01
+LIST:
+Preparation:
+   Generating 1010000 points...Done
+   Creation of the dictionary (1000000 points)...Done in 0.000000s
+   (Size:1000000, height=0, average node depth=0)
+
+Testing exact searches:
+   10000 positive searches...Done in 25.343750s
+   10000 negative searches...Done in 31.015625s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 38.171875s
+   Average list size: 311.445100
+
+BST:
+Preparation:
+   Generating 1010000 points...Done
+   Creation of the dictionary (1000000 points)...Done in 0.531250s
+   (Size:1000000, height=19, average node depth=17)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.015625s
+   10000 negative searches...Done in 0.015625s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 40.625000s
+   Average list size: 311.445100
+
+BST2D:
+Preparation:
+   Generating 1010000 points...Done
+   Creation of the dictionary (1000000 points)...
+Tri X: 0.234375 s
+Tri Y: 0.234375 s
+Build: 0.234375 s
+Done in 0.734375s
+   (Size:1000000, height=19, average node depth=17)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.015625s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 0.093750s
+   Average list size: 311.445100
+
+EXPÉRIENCE 2 : N fixe=100000, recherches=10000, rayon variable
+--------------------------------------------------------------
+
+N = 100000, Q = 10000, r = 0.01
+LIST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.000000s
+   (Size:100000, height=0, average node depth=0)
+
+Testing exact searches:
+   10000 positive searches...Done in 2.484375s
+   10000 negative searches...Done in 2.468750s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 3.234375s
+   Average list size: 31.146500
+
+BST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.031250s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.015625s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 1.062500s
+   Average list size: 31.146500
+
+BST2D:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...
+Tri X: 0.015625 s
+Tri Y: 0.031250 s
+Build: 0.015625 s
+Done in 0.062500s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.000000s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.010000...Done in 0.015625s
+   Average list size: 31.146500
+
+N = 100000, Q = 10000, r = 0.05
+LIST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.000000s
+   (Size:100000, height=0, average node depth=0)
+
+Testing exact searches:
+   10000 positive searches...Done in 2.453125s
+   10000 negative searches...Done in 2.468750s
+
+Testing ball searches:
+   10000 ball searches of radius 0.050000...Done in 3.578125s
+   Average list size: 751.747600
+
+BST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.031250s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.015625s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.050000...Done in 6.703125s
+   Average list size: 751.747600
+
+BST2D:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...
+Tri X: 0.015625 s
+Tri Y: 0.031250 s
+Build: 0.015625 s
+Done in 0.062500s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.000000s
+   10000 negative searches...Done in 0.015625s
+
+Testing ball searches:
+   10000 ball searches of radius 0.050000...Done in 0.171875s
+   Average list size: 751.747600
+
+N = 100000, Q = 10000, r = 0.1
+LIST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.000000s
+   (Size:100000, height=0, average node depth=0)
+
+Testing exact searches:
+   10000 positive searches...Done in 2.500000s
+   10000 negative searches...Done in 2.500000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.100000...Done in 4.531250s
+   Average list size: 2875.958900
+
+BST:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...Done in 0.031250s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.000000s
+   10000 negative searches...Done in 0.015625s
+
+Testing ball searches:
+   10000 ball searches of radius 0.100000...Done in 14.984375s
+   Average list size: 2875.958900
+
+BST2D:
+Preparation:
+   Generating 110000 points...Done
+   Creation of the dictionary (100000 points)...
+Tri X: 0.031250 s
+Tri Y: 0.015625 s
+Build: 0.015625 s
+Done in 0.062500s
+   (Size:100000, height=16, average node depth=14)
+
+Testing exact searches:
+   10000 positive searches...Done in 0.000000s
+   10000 negative searches...Done in 0.000000s
+
+Testing ball searches:
+   10000 ball searches of radius 0.100000...Done in 0.656250s
+   Average list size: 2875.958900
+
+Tests terminés.

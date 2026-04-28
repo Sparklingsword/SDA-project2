@@ -548,6 +548,5 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 
     pdctBallSearchRec(pd->bst->root, xc, yc, r,r*r, true, result);
 
-
     return result;
 }
