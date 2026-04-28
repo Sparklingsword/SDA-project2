@@ -23,6 +23,7 @@ struct BNode2d_t
 typedef struct BST2d_t
 {
     BNode2d *root;
+    BNode2d *nodes;
     size_t size;
 }BST2d;
 
@@ -40,6 +41,8 @@ struct PointDct_t
 };
 
 double now(void);
+
+
 
 double now()
 {
@@ -63,7 +66,7 @@ void quickSort(PVpair *array, size_t p, size_t q);
 int compare(double x1, double x2);
 
 void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, size_t q);
-BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft);
+BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft, int *idx, BNode2d *nodes);
 
 void *pdctExactSearch(PointDct *pd, Point *p);
 void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
@@ -107,6 +110,7 @@ BNode2d *bn2dNew(Point *point, void *value)
 void bst2dFree(BST2d *bst, bool freePoint, bool freeValue)
 {
     bst2dFreeRec(bst->root, freePoint, freeValue);
+    free(bst->nodes);
     free(bst);
 }
 
@@ -114,13 +118,16 @@ void bst2dFreeRec(BNode2d *n, bool freePoint, bool freeValue)
 {
     if (n == NULL)
         return;
+
     bst2dFreeRec(n->left, freePoint, freeValue);
     bst2dFreeRec(n->right, freePoint, freeValue);
+
     if (freePoint)
         free(n->point);
+        
     if (freeValue)
         free(n->value);
-    free(n);
+
 }
 
 size_t bst2dSize(BST2d *bst)
@@ -310,17 +317,16 @@ void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, s
     }
 }
 
-BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft)
+BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft,int *idx, BNode2d *nodes)
 {
     if(p > q)
         return NULL;
 
     size_t m = p + (q - p)/2;
-    BNode2d *node;
+    BNode2d *node = &nodes[(*idx)++];
 
     if(axis)
     {
-        node = bn2dNew(arraySortedX[m].point, arraySortedX[m].value);
 
         // marks Left Ids
         for(size_t i = p; i < m; i++)
@@ -328,17 +334,11 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
             isLeft[arraySortedX[i].id] = true;
         }
 
-        tempName(arraySortedY, arraySortedX[m], temp, isLeft, p, q);
-
-        node->x = arraySortedX[m].xy;
-        node->y = arraySortedY[m].xy;
-        
+        tempName(arraySortedY, arraySortedX[m], temp, isLeft, p, q);   
     }
 
     else
     {
-        node = bn2dNew(arraySortedY[m].point, arraySortedY[m].value);
-
         // marks Left Ids
         for(size_t i = p; i < m; i++)
         {
@@ -346,21 +346,20 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
         }
 
         tempName(arraySortedX, arraySortedY[m], temp, isLeft, p, q);
-
-        node->x = arraySortedX[m].xy;
-        node->y = arraySortedY[m].xy;
-
     }
 
-    if(!node)
-        return NULL;
-
+    node->point = arraySortedX[m].point;
+    node->value = arraySortedX[m].value;
+    node->x = arraySortedX[m].xy;
+    node->y = arraySortedY[m].xy;
     node->parent = parent;
+    node->left = NULL;
+    node->right = NULL;
 
     if(p < m)
-        node->left = buildOptBst2d(arraySortedX, arraySortedY, temp, node, p, m - 1, !axis, isLeft);
+        node->left = buildOptBst2d(arraySortedX, arraySortedY, temp, node, p, m - 1, !axis, isLeft, idx, nodes);
     
-    node->right = buildOptBst2d(arraySortedX, arraySortedY, temp, node, m + 1, q, !axis, isLeft);
+    node->right = buildOptBst2d(arraySortedX, arraySortedY, temp, node, m + 1, q, !axis, isLeft, idx, nodes);
 
     return node;
 }
@@ -421,9 +420,12 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
     PVpair *temp = malloc(size * sizeof(PVpair));
     if(!temp) return  NULL;
 
+    int idx = 0;    
+    BNode2d *nodes = malloc(size * sizeof(BNode2d));
+
 
     t0 = now();
-    bst->root = buildOptBst2d(arraySortedX, arraySortedY, temp, NULL, 0, size-1, true, isLeft);
+    bst->root = buildOptBst2d(arraySortedX, arraySortedY, temp, NULL, 0, size-1, true, isLeft, &idx, nodes);
     t1 = now();
     printf("Build: %f s\n", t1 - t0);
     
@@ -432,6 +434,7 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
     free(temp);
     free(isLeft);
 
+    bst->nodes = nodes;
     bst->size = size;
     pd->bst = bst;
 	return pd;
@@ -440,7 +443,8 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 void pdctFree(PointDct *pd)
 {
 	bst2dFree(pd->bst, false, false);
-	free(pd);
+    free(pd);
+
 }
 
 size_t pdctSize(PointDct *pd)
@@ -481,13 +485,13 @@ void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
 
     if(axis)
     {
-        comp = compare(ptGetx(p),ptGetx(point));
+        comp = compare(ptGetx(p),node->x);
         axis = false;
     }
 
     else
     {
-        comp = compare(ptGety(p),ptGety(point));
+        comp = compare(ptGety(p),node->y);
         axis = true;
     }
 
@@ -503,6 +507,8 @@ void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bo
 {
     if (node == NULL)
         return;
+
+
 
     double dx = node->x - xc;
     double dy = node->y - yc;
@@ -525,6 +531,8 @@ void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bo
         pdctBallSearchRec(node->right, xc, yc, r,rr, !axis, result);
 }
 
+
+
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
 {
     List *result = listNew();
@@ -539,6 +547,7 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 	double yc = ptGety(p);
 
     pdctBallSearchRec(pd->bst->root, xc, yc, r,r*r, true, result);
+
 
     return result;
 }
