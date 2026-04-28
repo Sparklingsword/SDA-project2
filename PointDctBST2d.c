@@ -42,11 +42,9 @@ struct PointDct_t
 
 double now(void);
 
-
-
 double now()
 {
-    return (double)clock() / CLOCKS_PER_SEC;
+    return (double)clock()/CLOCKS_PER_SEC;
 }
 
 BST2d *bst2dNew(void);
@@ -66,13 +64,13 @@ void quickSort(PVpair *array, size_t p, size_t q);
 int compare(double x1, double x2);
 
 void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, size_t q);
-BNode2d *buildOptBst2d(PVpair *arraySortedX ,PVpair *arraySortedY, PVpair *temp, BNode2d *parent,size_t p, size_t q, bool axis, bool *isLeft, int *idx, BNode2d *nodes);
+BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp, BNode2d *parent, size_t p, size_t q, bool axis, bool *isLeft, int *idx, BNode2d *nodes);
 
 void *pdctExactSearch(PointDct *pd, Point *p);
-void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis);
+void *pdctExactSearchRec(BNode2d *node, Point *p, bool axis);
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r);
-void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r, double rr, bool axis, List *result);
+void pdctBallSearchRec(BNode2d *node, double xc, double yc, double r, double rr, bool axis, List *result);
 
 /*
     2 Dimensional BST structure and useful functions for the BST2d
@@ -142,8 +140,10 @@ static size_t bst2dHeightRec(BNode2d *root)
 
     size_t hleft = bst2dHeightRec(root->left);
     size_t hright = bst2dHeightRec(root->right);
+
     if (hleft > hright)
         return 1 + hleft;
+
     else
         return 1 + hright;
 }
@@ -311,7 +311,7 @@ void tempName(PVpair *array, PVpair med, PVpair *temp, bool *isLeft, size_t p, s
         }
     }
 
-    for(size_t k = 0; k < (q-p+1); k++)
+    for(size_t k = 0; k < (q - p + 1); k++)
     {
         array[p+k] = temp[k];
     }
@@ -366,7 +366,7 @@ BNode2d *buildOptBst2d(PVpair *arraySortedX, PVpair *arraySortedY, PVpair *temp,
 
 PointDct *pdctCreate(List *lpoints, List *Lvalues)
 {
-    double t0,t1;
+    double t0, t1;
     size_t size = listSize(Lvalues);
     
     if(listSize(lpoints) != size)
@@ -401,31 +401,28 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
     printf("\n");
 
     t0 = now();
-    quickSort(arraySortedX, 0, size-1);
+    quickSort(arraySortedX, 0, size - 1);
     t1 = now();
     printf("Tri X: %f s\n", t1 - t0);
-
     
     t0 = now();
-    quickSort(arraySortedY, 0, size-1);
+    quickSort(arraySortedY, 0, size - 1);
     t1 = now();
     printf("Tri Y: %f s\n", t1 - t0);
-
 
     BST2d *bst = bst2dNew();
 
     bool *isLeft = calloc(size, sizeof(bool));
     if(!isLeft) return NULL;
 
-    PVpair *temp = malloc(size * sizeof(PVpair));
+    PVpair *temp = malloc(size*sizeof(PVpair));
     if(!temp) return  NULL;
 
     int idx = 0;    
     BNode2d *nodes = malloc(size * sizeof(BNode2d));
 
-
     t0 = now();
-    bst->root = buildOptBst2d(arraySortedX, arraySortedY, temp, NULL, 0, size-1, true, isLeft, &idx, nodes);
+    bst->root = buildOptBst2d(arraySortedX, arraySortedY, temp, NULL, 0, size - 1, true, isLeft, &idx, nodes);
     t1 = now();
     printf("Build: %f s\n", t1 - t0);
     
@@ -454,7 +451,7 @@ size_t pdctSize(PointDct *pd)
 
 size_t pdctHeight(PointDct *pd)
 {
-	return bst2dHeight(pd->bst) -1;
+	return bst2dHeight(pd->bst) - 1;
 }
 
 size_t pdctAverageNodeDepth(PointDct *pd)
@@ -471,7 +468,7 @@ void *pdctExactSearch(PointDct *pd, Point *p)
     return pdctExactSearchRec(pd->bst->root, p, true);
 }
 
-void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
+void *pdctExactSearchRec(BNode2d *node, Point *p, bool axis)
 {
     if(!node)
         return NULL;
@@ -485,13 +482,13 @@ void *pdctExactSearchRec(BNode2d *node, Point *p,bool axis)
 
     if(axis)
     {
-        comp = compare(ptGetx(p),node->x);
+        comp = compare(ptGetx(p), node->x);
         axis = false;
     }
 
     else
     {
-        comp = compare(ptGety(p),node->y);
+        comp = compare(ptGety(p), node->y);
         axis = true;
     }
 
@@ -508,8 +505,6 @@ void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bo
     if (node == NULL)
         return;
 
-
-
     double dx = node->x - xc;
     double dy = node->y - yc;
 
@@ -525,13 +520,11 @@ void pdctBallSearchRec(BNode2d *node,double xc,double yc, double r,double rr, bo
         dist = -dy;
 
     if (dist < r) 
-        pdctBallSearchRec(node->left, xc, yc, r,rr, !axis, result);
+        pdctBallSearchRec(node->left, xc, yc, r, rr, !axis, result);
     
     if (dist >= -r) 
-        pdctBallSearchRec(node->right, xc, yc, r,rr, !axis, result);
+        pdctBallSearchRec(node->right, xc, yc, r, rr, !axis, result);
 }
-
-
 
 List *pdctBallSearch(PointDct *pd, Point *p, double r)
 {
@@ -546,7 +539,7 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
     double xc = ptGetx(p);
 	double yc = ptGety(p);
 
-    pdctBallSearchRec(pd->bst->root, xc, yc, r,r*r, true, result);
+    pdctBallSearchRec(pd->bst->root, xc, yc, r, r*r, true, result);
 
     return result;
 }
