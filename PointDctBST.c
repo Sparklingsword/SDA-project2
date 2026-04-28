@@ -84,11 +84,17 @@ MinMax getMinMax(List *lpoints)
 	{
 		Point *currentPoint = (Point *) n->value;
 
-		if(ptGetx(currentPoint) > maxX) maxX = ptGetx(currentPoint);
-		if(ptGety(currentPoint) > maxY) maxY = ptGety(currentPoint);
+		if(ptGetx(currentPoint) > maxX)
+			maxX = ptGetx(currentPoint);
 
-		if(ptGetx(currentPoint) < minX) minX = ptGetx(currentPoint);
-		if(ptGety(currentPoint) < minY) minY = ptGety(currentPoint);
+		if(ptGety(currentPoint) > maxY)
+			maxY = ptGety(currentPoint);
+
+		if(ptGetx(currentPoint) < minX)
+			minX = ptGetx(currentPoint);
+
+		if(ptGety(currentPoint) < minY)
+			minY = ptGety(currentPoint);
 	}
 
 	MinMax minmax;
@@ -148,7 +154,7 @@ PointDct *pdctCreate(List *lpoints, List *Lvalues)
 		valNode = valNode->next;
 	}
 
-	BST *bst = bstOptimalBuild(comparisonZ,lz,pairList);
+	BST *bst = bstOptimalBuild(comparisonZ, lz, pairList);
 
 	listFree(lz, false);
 	listFree(pairList, false);
@@ -236,7 +242,7 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 	uint32_t normalizedX2 = normalizeUint32(x2, minmax.minX, minmax.maxX);
 	uint32_t normalizedY2 = normalizeUint32(y2, minmax.minY, minmax.maxY);
 
-	uint64_t z2 = zEncode(normalizedX2, normalizedY2);
+	uint64_t z2 = zEncode(normalizedX2,normalizedY2);
 
 	List *l = bstRangeSearch(pd->bst, &z1, &z2);
 
@@ -246,8 +252,10 @@ List *pdctBallSearch(PointDct *pd, Point *p, double r)
 	{
 		PVpair *pair = (PVpair*) n->value;
 
-		if(isInBall(pair->point, p, r) ==  1)
+		if(isInBall(pair->point,p,r) ==  1)
+		{
 			listInsertLast(result, pair->value);
+		}
 	}
 
 	listFree(l, false);

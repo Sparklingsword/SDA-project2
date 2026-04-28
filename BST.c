@@ -253,7 +253,7 @@ BST *bstOptimalBuild(int comparison_fn_t(void *, void *), List *lkeys, List *lva
         keyNode = keyNode->next;
     }
 
-    KVpair *temp = malloc(nbrValues*sizeof(KVpair));
+    KVpair *temp = malloc(nbrValues * sizeof(KVpair));
 
     if(!temp)
         return NULL;
@@ -329,7 +329,7 @@ BNode *buildOptBst(KVpair *pairList, BNode *parent, size_t p, size_t q)
 
     size_t m = p + (q - p)/2;
 
-    BNode *node = bnNew(pairList[m].key, pairList[m].value);
+    BNode *node = bnNew(pairList[m].key,pairList[m].value);
 
     if(!node)
         return NULL;
@@ -356,7 +356,7 @@ List *bstRangeSearch(BST *bst, void *keymin, void *keymax)
     if(!node)
         return list;
 
-    for(;node && bst->compfn(node->key,keymax) <= 0; node = successor(node))
+    for(;node && bst->compfn(node->key, keymax) <= 0; node = successor(node))
     {
         listInsertLast(list, node->value);
     }
@@ -374,7 +374,7 @@ BNode *bstRangeSearchKeymin(BNode *node, void *keymin, int (*compfn)(void *, voi
 
     else
     {
-        BNode *test = bstRangeSearchKeymin(node->left,keymin,compfn);
+        BNode *test = bstRangeSearchKeymin(node->left, keymin, compfn);
 
         if(test)
             return test;
@@ -404,7 +404,7 @@ size_t calcBstAverageNodeDepth(BNode *node, size_t *nbrNode, size_t depth)
     size_t sumRight = 0;
 
     if(node->left)
-        sumLeft = calcBstAverageNodeDepth(node->left, nbrNode, depth + 1);
+        sumLeft = calcBstAverageNodeDepth(node->left,nbrNode, depth + 1);
 
     if(node->right)
         sumRight = calcBstAverageNodeDepth(node->right, nbrNode, depth + 1);
